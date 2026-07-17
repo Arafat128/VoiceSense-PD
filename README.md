@@ -12,7 +12,8 @@ Premium research app for **voice-based Parkinson’s disease (PD) screening** wi
 ## Quick start
 
 ```bash
-cd voicesense-pd-screening
+git clone https://github.com/Arafat128/VoiceSense-PD.git
+cd VoiceSense-PD
 python -m pip install -r requirements.txt
 python -m streamlit run app/streamlit_app.py
 ```
