@@ -208,7 +208,7 @@ def story() -> list:
             "VoiceSense is a local website. You start it on your own computer with "
             "<b>python -m streamlit run app/streamlit_app.py</b>, then open "
             "http://127.0.0.1:8501. The model runs in that Python process. "
-            "A recording is not sent to Primus, and a successful analysis drops the audio from the page."
+            "A successful analysis drops the audio from the page."
         ),
         P("The site has four sections. The control under the title remembers which one you picked, including after you upload a file."),
         table(
@@ -216,7 +216,7 @@ def story() -> list:
             [
                 ["Live voice studio", "Record or upload a vowel and get a screening hint.", "app/live_page.py"],
                 ["Feature lab", "Score a row of numbers from a spreadsheet. No microphone.", "app/feature_page.py"],
-                ["Privacy &amp; enrollment", "See whether audio stays on this machine. Optionally prove an account, never the voice.", "app/privacy_ui.py"],
+                ["Privacy", "See whether the recording stays on this machine, and download a receipt with no WAV.", "app/privacy_ui.py"],
                 ["About &amp; method", "Short limits of the method, and where the code lives.", "app/streamlit_app.py"],
             ],
             [1.7 * inch, 3.3 * inch, 2.1 * inch],
@@ -231,8 +231,7 @@ def story() -> list:
                 ["app/live_page.py", "Record, upload, discard, analyze, and show the result."],
                 ["app/feature_page.py", "Demo row, CSV upload, or typed numbers."],
                 ["app/widgets.py", "Shared result cards. Change the look here, not the math."],
-                ["app/privacy_ui.py", "On-device banner, receipt download, enrollment tab."],
-                ["app/primus_enroll/", "Browser frame for an identity proof. It never receives a WAV."],
+                ["app/privacy_ui.py", "On-device banner and receipt download."],
                 ["src/__init__.py", "One-line map of the engine. Read this before the other src files."],
                 ["src/predict_audio.py", "Score one recording and apply the safety rules."],
                 ["src/audio_features.py", "Turn audio into pitch, loudness, and noise numbers."],
@@ -240,11 +239,10 @@ def story() -> list:
                 ["src/explain.py", "Technical reasons, compared with training averages."],
                 ["src/predict.py and src/train.py", "Spreadsheet models (English UCI, Bengali BenSParX)."],
                 ["src/train_audio.py", "Trains the microphone model. Not used when someone clicks Analyze."],
-                ["src/privacy.py and src/enrollment.py", "Wipe audio. Build a receipt. Store a fingerprint only."],
+                ["src/privacy.py", "Wipe audio from the page and build a receipt with no WAV."],
                 ["models/", "Trained files. Do not edit them by hand."],
                 ["reports/", "Accuracy numbers written the last time the models were trained."],
                 ["scripts/", "Small checks, including this PDF builder."],
-                ["enrollment/", "Builds the identity-proof bundle. Voice screening does not need it."],
                 ["landing/", "A static marketing page. The model does not run there."],
                 ["datasets/ (outside this folder)", "Training audio and tables. Not shipped in the git repo."],
             ],
@@ -262,8 +260,7 @@ def story() -> list:
                 ["1", "Streamlit loads the entry file and adds the project folder to the Python path.", "app/streamlit_app.py"],
                 ["2", "Any leftover audio keys are removed from the session.", "src/privacy.py"],
                 ["3", "The title, the research disclaimer, and the privacy banner are drawn.", "app/streamlit_app.py"],
-                ["4", "If a past enrollment fingerprint exists in the home folder, a short badge is shown. The voice is not in that badge.", "src/enrollment.py"],
-                ["5", "The section control opens Live voice studio, unless you already picked another section in this visit.", "app/streamlit_app.py"],
+                ["4", "The section control opens Live voice studio, unless you already picked another section in this visit.", "app/streamlit_app.py"],
             ],
             [0.7 * inch, 4.3 * inch, 2.1 * inch],
         ),
@@ -391,7 +388,7 @@ def story() -> list:
 
     flow += [
         CondPageBreak(3.0 * inch),
-        h1("6. Privacy, receipt, and enrollment"),
+        h1("6. Privacy and the receipt"),
         h2("During a live analysis"),
         bullets([
             "Audio is scored in the Python process on the machine running the app.",
@@ -401,21 +398,13 @@ def story() -> list:
         ]),
         h2("Download screening receipt"),
         P(
-            "The JSON file is a summary: decision, everyday sentences, quality, and an optional fingerprint. "
+            "The JSON file is a summary: decision, everyday sentences, and quality. "
             "It has no WAV and no upload file name. The builder checks that audio markers are absent. "
             "Code: <b>src/privacy.py</b>, button in <b>app/privacy_ui.py</b>."
         ),
-        h2("Enrollment is a separate, optional step"),
         P(
-            "Primus can prove that a web account is controlled by the person, or that an age-style check passed. "
-            "The voice path never calls it. If a template returns a plain handle, the app replaces it with a SHA-256 fingerprint "
-            "and stores that under the home folder in <b>.voicesense/enrollment.json</b>. "
-            "A mock button exists for interface tests. A mock result is not a real proof."
-        ),
-        callout(
-            "<b>Do not publish a Parkinson's label together with the enrollment fingerprint.</b> "
-            "The app secret in .env is for local signing tests only. Do not put that file on the public internet.",
-            AMBER,
+            "Identity proofs are not in this repository. The Primus build is the separate project "
+            "<b>voicesense-primus</b>."
         ),
     ]
 
@@ -459,7 +448,6 @@ def story() -> list:
                 ["Change the CSV / demo / manual lab", "app/feature_page.py"],
                 ["Change colors and the result banner look", "app/styles.py and app/widgets.py"],
                 ["Change the receipt or the on-device warning", "src/privacy.py and app/privacy_ui.py"],
-                ["Change enrollment rules", "src/enrollment.py and app/primus_enroll/"],
                 ["Retrain", "src/train.py or src/train_audio.py, then replace the files in models/"],
             ],
             [4.15 * inch, 2.95 * inch],

@@ -4,7 +4,7 @@ This file does not score a voice. It draws the frame and opens one screen:
 
   app/live_page.py       microphone or audio upload  (default)
   app/feature_page.py    spreadsheet lab
-  app/privacy_ui.py      privacy and optional enrollment
+  app/privacy_ui.py      on-device notice and receipt (no identity proof)
   the About block below  how the method is limited
 
 The engine map is the docstring in src/__init__.py.
@@ -24,11 +24,7 @@ if str(ROOT) not in sys.path:
 from app.feature_page import feature_page
 from app.live_page import live_page
 from app.notices import render_flash
-from app.privacy_ui import (
-    _session_enrollment,
-    render_privacy_banner,
-    render_privacy_enrollment_tab,
-)
+from app.privacy_ui import render_privacy_banner, render_privacy_tab
 from app.styles import PREMIUM_CSS
 from src.config import DISCLAIMER
 from src.privacy import wipe_audio_keys
@@ -70,16 +66,11 @@ st.markdown(
 st.info(DISCLAIMER)
 render_flash()
 render_privacy_banner()
-_enroll = _session_enrollment()
-if _enroll and _enroll.get("identity_fingerprint"):
-    fp = str(_enroll["identity_fingerprint"])
-    mock = " (mock)" if _enroll.get("mock") else ""
-    st.caption(f"Study enrollment{mock} · fingerprint `{fp[:12]}…` · voice is not linked in this badge.")
 
 PAGES = (
     "Live voice studio",
     "Feature lab",
-    "Privacy & enrollment",
+    "Privacy",
     "About & method",
 )
 page = st.segmented_control(
@@ -98,8 +89,8 @@ if page == "Live voice studio":
     live_page()
 elif page == "Feature lab":
     feature_page()
-elif page == "Privacy & enrollment":
-    render_privacy_enrollment_tab()
+elif page == "Privacy":
+    render_privacy_tab()
 elif page == "About & method":
     st.markdown(
         """
@@ -121,9 +112,8 @@ elif page == "About & method":
           <h3>Privacy</h3>
           <p class="vs-muted">
             Live screening is designed to run on your machine. Successful analysis
-            discards the recording. Optional Primus enrollment proves a Web2 account
-            or age condition and stores only a fingerprint under
-            <code>~/.voicesense/</code> — never the WAV.
+            discards the recording. The receipt download does not include the WAV.
+            Identity proofs live in the separate voicesense-primus repository.
           </p>
           <h3>Where the code lives</h3>
           <p class="vs-muted">

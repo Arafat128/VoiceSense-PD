@@ -19,7 +19,6 @@ The microphone model is trained separately
 
 Privacy
     privacy.py          drop audio from memory, and build a receipt that has no WAV
-    enrollment.py       optional identity fingerprint; this file never sees a recording
 
 The website that calls this package is app/streamlit_app.py.
 The click-by-click guide is docs/VoiceSense-app-flows.pdf.

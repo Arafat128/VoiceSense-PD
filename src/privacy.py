@@ -121,7 +121,6 @@ def make_screening_receipt(
     *,
     source_kind: Optional[str] = None,
     include_features: bool = False,
-    enrollment: Optional[Dict[str, Any]] = None,
     local_runtime: bool = True,
 ) -> Dict[str, Any]:
     """Build an exportable screening record that cannot contain audio bytes."""
@@ -146,17 +145,6 @@ def make_screening_receipt(
 
     for drop in ("imputed_features",):
         primary.pop(drop, None)
-
-    enrollment_public = None
-    if enrollment:
-        enrollment_public = {
-            "enrolled": True,
-            "identity_fingerprint": enrollment.get("identity_fingerprint"),
-            "age_ok": enrollment.get("age_ok"),
-            "source": enrollment.get("source"),
-            "verified_at": enrollment.get("verified_at"),
-            "mock": bool(enrollment.get("mock")),
-        }
 
     receipt = {
         "schema": RECEIPT_SCHEMA,
@@ -184,7 +172,6 @@ def make_screening_receipt(
         "secondary": result.get("secondary") or {},
         "warnings": result.get("warnings") or [],
         "plain_language": _plain_for_receipt(result.get("plain")),
-        "enrollment": enrollment_public,
         "privacy": {
             "raw_audio_included": False,
             "upload_filename_included": False,

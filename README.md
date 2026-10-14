@@ -4,7 +4,6 @@ Premium research app for **voice-based Parkinson’s disease (PD) screening** wi
 
 - **Live microphone / audio upload** (English & Bangla UI modes)
 - **On-device processing** (local Streamlit: recording discarded after analysis)
-- **Optional Primus zkTLS enrollment** (hashed uniqueness / age — never the WAV)
 - **Feature-table lab** (UCI English + BenSParX Bengali)
 - **Explainable outputs** (why PD / why not / uncertain)
 - **Conservative decision policy** to reduce false PD flags on laptop mics
@@ -43,30 +42,7 @@ Local Streamlit is the supported privacy mode:
 
 **Streamlit Community Cloud is not on-device.** The browser must upload audio to the host. The app shows a warning in that case.
 
-Enrollment receipts (fingerprints only) live in `~/.voicesense/enrollment.json`, not in the git repo.
-
-## Optional Primus enrollment
-
-Primus is **not** on the microphone path. Use it only to prove a Web2 account or an age-style boolean, then store a SHA-256 fingerprint.
-
-1. Create a project + template at [dev.primuslabs.xyz](https://dev.primuslabs.xyz/).
-2. Copy `.env.example` to `.env` and fill `PRIMUS_APP_ID`, `PRIMUS_APP_SECRET` (local test signing only), and `PRIMUS_UNIQUENESS_TEMPLATE_ID`.
-3. Build the browser SDK once:
-
-```bash
-cd enrollment
-npm install
-npm run build
-```
-
-4. Install the [Primus extension](https://chromewebstore.google.com/detail/primus/oeiomhmbaapihbilkfkhmlajkeegnjhe).
-5. Open the **Privacy & enrollment** tab.
-
-The SDK bundle is already built under `app/primus_enroll/frontend/vendor/` in this tree. Rebuild it after upgrading `@primuslabs/zktls-js-sdk`.
-
-Without Hub credentials you can still paste an attestation JSON. `PRIMUS_MOCK=1` simulates enrollment for UI tests and is **not** a zkTLS proof.
-
-Do not publish PD labels together with the enrollment fingerprint on a public chain.
+Primus identity proofs are not in this repository. That app is [voicesense-primus](https://github.com/Arafat128/voicesense-primus).
 
 ## IDM popup (Error 0x80080005)
 
@@ -101,14 +77,12 @@ Open these in order if you are new to the code:
 app/streamlit_app.py   # start the site; picks one screen
 app/live_page.py       # microphone and audio upload
 app/feature_page.py    # spreadsheet lab
-app/privacy_ui.py      # privacy banner and enrollment tab
+app/privacy_ui.py      # on-device banner and receipt
 app/widgets.py         # shared result cards
-app/primus_enroll/     # identity proof frame (never the WAV)
 src/                   # scoring, training, privacy (see src/__init__.py)
 models/                # trained files; do not edit by hand
 reports/               # metrics written by training
 scripts/               # small checks
-enrollment/            # builds the identity-proof browser bundle
 landing/               # marketing page only; no model runs here
 docs/                  # VoiceSense-app-flows.pdf
 ```
