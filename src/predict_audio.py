@@ -16,22 +16,54 @@ from .explain import explain_prediction
 from .predict import load_model as load_feature_model
 
 
+def _resolve_live_artifact(raw: Any, default_model: Optional[str] = None) -> Path:
+    """
+    Resolve a live-audio joblib path.
+
+    Training used to store absolute paths from another machine
+    (e.g. D:\\fugu\\Thesis\\pd_screening\\models\\...). Prefer the filename
+    inside this project's models/ directory.
+    """
+    candidates = []
+    if raw:
+        p = Path(str(raw))
+        # Always try this project's models/ first so CWD does not matter.
+        candidates.append(MODELS_DIR / p.name)
+        if p.is_absolute():
+            candidates.append(p)
+    if default_model:
+        candidates.append(MODELS_DIR / f"live_audio_italian__{default_model}.joblib")
+    for name in ("random_forest", "svm_rbf"):
+        candidates.append(MODELS_DIR / f"live_audio_italian__{name}.joblib")
+
+    seen = set()
+    for path in candidates:
+        key = str(path)
+        if key in seen:
+            continue
+        seen.add(key)
+        if path.exists():
+            return path
+    raise FileNotFoundError(
+        f"Live audio model not found under {MODELS_DIR}. "
+        "Expected live_audio_italian__random_forest.joblib. Run: python -m src.train_audio"
+    )
+
+
 def load_live_audio_model(model_name: Optional[str] = None) -> Dict[str, Any]:
     pointer = MODELS_DIR / "live_audio_default.joblib"
     if model_name:
-        path = MODELS_DIR / f"live_audio_italian__{model_name}.joblib"
-        if not path.exists():
-            raise FileNotFoundError(f"Live audio model not found: {path}. Run: python -m src.train_audio")
+        path = _resolve_live_artifact(
+            MODELS_DIR / f"live_audio_italian__{model_name}.joblib",
+            default_model=model_name,
+        )
         return joblib.load(path)
     if pointer.exists():
         p = joblib.load(pointer)
-        return joblib.load(p["artifact"])
-    # fallback
-    for name in ("random_forest", "svm_rbf"):
-        path = MODELS_DIR / f"live_audio_italian__{name}.joblib"
-        if path.exists():
-            return joblib.load(path)
-    raise FileNotFoundError("No live audio model found. Run: python -m src.train_audio")
+        path = _resolve_live_artifact(p.get("artifact"), default_model=p.get("default_model"))
+        return joblib.load(path)
+    path = _resolve_live_artifact(None)
+    return joblib.load(path)
 
 
 def _add_engineered(feat_dict: Dict[str, float]) -> Dict[str, float]:
@@ -88,7 +120,113 @@ def _decide_from_proba(proba: float, thresholds: Dict[str, float]) -> Dict[str, 
     }
 
 
-def _predict_with_pack(pack: Dict[str, Any], feat_dict: Dict[str, float]) -> Dict[str, Any]:
+# A firm call needs a steady vowel. Jitter, shimmer, and HNR move with room
+# noise and phone compression, so clips that only barely pass the hard reject
+# gate are not allowed to say "Parkinson's" or "healthy".
+MIN_CALL_DURATION_SEC = 4.0
+MIN_CALL_SNR_DB = 10.0
+MIN_CALL_VOICED = 0.35
+MIN_CALL_COMPLETENESS = 0.90
+_PEER_MODEL = {"random_forest": "svm_rbf", "svm_rbf": "random_forest"}
+
+
+def _recording_limits(quality: Dict[str, Any], completeness: float) -> list:
+    """Reasons a clip is too weak for a firm PD or healthy call."""
+    reasons = []
+    duration = float(quality.get("duration_sec") or 0.0)
+    snr = float(quality.get("snr_db_proxy") or 0.0)
+    voiced = float(quality.get("voiced_fraction") or 0.0)
+    if duration < MIN_CALL_DURATION_SEC:
+        reasons.append(
+            f"it is only {duration:.1f}s long (a steady vowel of at least 4 seconds is needed)"
+        )
+    if snr < MIN_CALL_SNR_DB:
+        reasons.append("background noise is high enough to distort pitch and loudness measures")
+    if voiced < MIN_CALL_VOICED:
+        reasons.append("too little of the clip is a clear voiced sound")
+    if float(completeness or 0.0) < MIN_CALL_COMPLETENESS:
+        reasons.append("some voice measures could not be calculated and had to be filled in")
+    return reasons
+
+
+def _downgrade_to_uncertain(primary: Dict[str, Any], reasons: list) -> None:
+    original = primary.get("prediction")
+    primary["downgraded_from"] = primary.get("decision_code")
+    primary["pred_label"] = -1
+    primary["decision_code"] = "UNCERTAIN"
+    primary["prediction"] = "Uncertain — not enough evidence to flag PD"
+    primary["decision_band"] = "uncertain"
+    note = "A firm call was withheld because: " + "; ".join(reasons) + "."
+    explanation = dict(primary.get("explanation") or {})
+    kept = [
+        line
+        for line in (explanation.get("summary_lines") or [])
+        if not str(line).startswith("Screening decision:")
+    ]
+    explanation["decision"] = primary["prediction"]
+    explanation["summary_lines"] = [
+        f"Screening decision: {primary['prediction']}",
+        note,
+        (
+            f"Underlying model probability of PD: {primary['probability_pd']:.1%}. "
+            f"Without the safeguard the call would have been: {original}."
+        ),
+    ] + kept
+    primary["explanation"] = explanation
+
+
+def _apply_accuracy_policy(
+    primary: Dict[str, Any],
+    peer: Optional[Dict[str, Any]],
+    quality: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Hold back a firm call unless the recording is usable and both models agree.
+
+    Home microphones inflate jitter, shimmer, and noise measures. Requiring
+    agreement, and refusing short or noisy clips, cuts false Parkinson's flags
+    without inventing a new trained model.
+    """
+    limits = _recording_limits(quality, float(primary.get("completeness") or 0.0))
+    raw_code = primary.get("decision_code")
+    peer_code = peer.get("decision_code") if peer else None
+    disagree = peer is not None and peer_code != raw_code
+    primary["model_call"] = {
+        "decision_code": raw_code,
+        "prediction": primary.get("prediction"),
+        "probability_pd": primary.get("probability_pd"),
+    }
+    primary["recording_limits"] = limits
+    primary["agreement"] = {
+        "peer_model": peer.get("model_name") if peer else None,
+        "peer_probability_pd": peer.get("probability_pd") if peer else None,
+        "peer_decision_code": peer_code,
+        "agree": bool(peer is not None and not disagree),
+        "single_model": peer is None,
+    }
+    reasons = []
+    if raw_code in ("PD", "HC"):
+        if disagree:
+            reasons.append("the second voice check does not agree with the first")
+        reasons.extend(limits)
+    primary["policy_notes"] = reasons
+    if reasons:
+        _downgrade_to_uncertain(primary, reasons)
+    elif limits:
+        explanation = dict(primary.get("explanation") or {})
+        lines = list(explanation.get("summary_lines") or [])
+        extra = "This clip is also a weak recording: " + "; ".join(limits) + "."
+        if extra not in lines:
+            lines.append(extra)
+        explanation["summary_lines"] = lines
+        primary["explanation"] = explanation
+    return primary
+
+
+def _predict_with_pack(
+    pack: Dict[str, Any],
+    feat_dict: Dict[str, float],
+    explain: bool = True,
+) -> Dict[str, Any]:
     feat_dict = _add_engineered(feat_dict)
     names = pack["feature_names"]
     medians = pack.get("train_medians") or {}
@@ -98,26 +236,28 @@ def _predict_with_pack(pack: Dict[str, Any], feat_dict: Dict[str, float]) -> Dic
     proba = float(pipe.predict_proba(X)[0, 1])
     thresholds = pack.get("decision_thresholds") or {"pd_high": 0.72, "hc_high": 0.42}
     decision = _decide_from_proba(proba, thresholds)
-    # For explanations, map uncertain toward the nearer class
-    exp_label = 1 if proba >= 0.5 else 0
-    series = X.iloc[0]
-    explanation = explain_prediction(pack, series, proba, exp_label, top_k=12)
-    # Override summary decision line for uncertain
-    if decision["pred_label"] == -1:
-        explanation["decision"] = decision["prediction"]
-        explanation["summary_lines"] = [
-            f"Screening decision: {decision['prediction']}",
-            f"Model probability of PD: {proba:.1%}",
-            (
-                f"PD is only flagged when probability ≥ {thresholds.get('pd_high', 0.72):.0%}; "
-                f"healthy when ≤ {thresholds.get('hc_high', 0.42):.0%}."
-            ),
-            "Your score is in the middle band — this often happens with short clips, new microphones, or normal voice variation.",
-            "This is NOT a diagnosis. If you have concerns, consult a clinician.",
-        ] + explanation.get("summary_lines", [])[3:]
-    else:
-        explanation["decision"] = decision["prediction"]
-        explanation["summary_lines"][0] = f"Screening decision: {decision['prediction']}"
+    explanation = None
+    if explain:
+        # For explanations, map uncertain toward the nearer class
+        exp_label = 1 if proba >= 0.5 else 0
+        series = X.iloc[0]
+        explanation = explain_prediction(pack, series, proba, exp_label, top_k=12)
+        # Override summary decision line for uncertain
+        if decision["pred_label"] == -1:
+            explanation["decision"] = decision["prediction"]
+            explanation["summary_lines"] = [
+                f"Screening decision: {decision['prediction']}",
+                f"Model probability of PD: {proba:.1%}",
+                (
+                    f"PD is only flagged when probability ≥ {thresholds.get('pd_high', 0.72):.0%}; "
+                    f"healthy when ≤ {thresholds.get('hc_high', 0.42):.0%}."
+                ),
+                "Your score is in the middle band — this often happens with short clips, new microphones, or normal voice variation.",
+                "This is NOT a diagnosis. If you have concerns, consult a clinician.",
+            ] + explanation.get("summary_lines", [])[3:]
+        else:
+            explanation["decision"] = decision["prediction"]
+            explanation["summary_lines"][0] = f"Screening decision: {decision['prediction']}"
 
     return {
         "pred_label": decision["pred_label"],
@@ -164,6 +304,19 @@ def predict_from_audio(
 
     live_pack = load_live_audio_model(live_model_name)
     primary = _predict_with_pack(live_pack, extraction.common)
+    peer = None
+    peer_name = _PEER_MODEL.get(str(live_pack.get("model_name") or ""))
+    if peer_name:
+        try:
+            peer = _predict_with_pack(
+                load_live_audio_model(peer_name),
+                extraction.common,
+                explain=False,
+            )
+        except Exception as exc:
+            peer = None
+            primary["peer_error"] = str(exc)
+    primary = _apply_accuracy_policy(primary, peer, quality)
 
     # Confidence blend: down-weight if quality borderline or many imputations
     q_factor = 1.0
@@ -186,6 +339,12 @@ def predict_from_audio(
         "Live laptop/phone mics differ from clinic recordings. "
         "A single clip can be wrong — do not treat a PD flag as a diagnosis.",
     ]
+    if primary.get("policy_notes"):
+        warnings.append(
+            "A firm healthy or Parkinson's call was withheld: "
+            + "; ".join(primary["policy_notes"])
+            + "."
+        )
     if primary.get("pred_label") == 1:
         warnings.append(
             "PD pattern flagged only because probability was high. "

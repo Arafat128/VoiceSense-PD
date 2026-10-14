@@ -8,5 +8,6 @@ librosa>=0.10
 soundfile>=0.12
 praat-parselmouth>=0.4
 scipy>=1.10
+python-dotenv>=1.0
 # optional for advanced explain plots
 # shap>=0.44

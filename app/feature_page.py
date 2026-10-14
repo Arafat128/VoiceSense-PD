@@ -1,0 +1,168 @@
+"""Feature lab — score a spreadsheet row, not a microphone.
+
+Three ways in, picked with the control at the top of this screen:
+
+- Demo hold-out: a row the model did not train on, with the true label shown after.
+- CSV upload: your own table. The column names must match the chosen dataset.
+- Manual: type the top features. The rest can be filled with training averages.
+
+Scoring is src/predict.py. Training those models is src/train.py.
+"""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from typing import Any, Dict
+
+import pandas as pd
+import streamlit as st
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from app.notices import render_flash, set_flash
+from app.widgets import _render_everyday, _render_explanation
+from src.config import DATASETS, DISCLAIMER, feature_meaning
+from src.predict import (
+    list_available_models,
+    load_holdout_samples,
+    load_model,
+    predict_from_features,
+)
+
+@st.fragment
+def feature_page() -> None:
+    render_flash()
+    st.markdown('<div class="vs-section">Feature-table screening</div>', unsafe_allow_html=True)
+    models = list_available_models()
+    ds_keys = sorted(
+        {
+            m["dataset_key"]
+            for m in models
+            if m["dataset_key"] in DATASETS
+        }
+    )
+    if not ds_keys:
+        st.error("No feature models found. Run `python -m src.train`")
+    else:
+        dataset_labels = {k: DATASETS.get(k, {}).get("display_name", k) for k in ds_keys}
+        dataset_key = st.selectbox(
+            "Dataset model",
+            options=ds_keys,
+            format_func=lambda k: dataset_labels.get(k, k),
+            key="feat_ds",
+        )
+        model_options = sorted(
+            {m["model_name"] for m in models if m["dataset_key"] == dataset_key}
+        )
+        default_ix = model_options.index("random_forest") if "random_forest" in model_options else 0
+        model_name = st.selectbox("Classifier", model_options, index=default_ix, key="feat_model")
+        pack = load_model(dataset_key, model_name)
+        feature_names = pack["feature_names"]
+        st.caption(
+            f"{pack.get('display_name')} · {len(feature_names)} features · {pack.get('language')}"
+        )
+
+        feature_mode = st.segmented_control(
+            "Feature input",
+            ["Demo hold-out", "CSV upload", "Manual"],
+            default="Demo hold-out",
+            key="feature_mode",
+            required=True,
+            label_visibility="collapsed",
+        )
+        sample_features = None
+        sample_meta: Dict[str, Any] = {}
+
+        if feature_mode == "Demo hold-out":
+            try:
+                holdout = load_holdout_samples(dataset_key)
+                options = [
+                    f"{r.sample_id} | {r.subject_id} | true={'PD' if int(r.true_label)==1 else 'HC'}"
+                    for r in holdout.itertuples()
+                ]
+                choice = st.selectbox("Sample", options, key="hold_sel")
+                row = holdout.iloc[options.index(choice)]
+                sample_meta = {
+                    "sample_id": row["sample_id"],
+                    "true_label": int(row["true_label"]),
+                }
+                sample_features = row[feature_names]
+                st.dataframe(pd.DataFrame(sample_features).T, use_container_width=True, hide_index=True)
+            except FileNotFoundError as e:
+                st.error(str(e))
+
+        elif feature_mode == "CSV upload":
+            up = st.file_uploader("CSV", type=["csv"], key="csv_feat")
+            if up is not None:
+                up.seek(0)
+                df_up = pd.read_csv(up)
+                st.dataframe(df_up.head(), use_container_width=True)
+                row_ix = st.number_input("Row", 0, max(0, len(df_up) - 1), 0, key="csv_row")
+                missing = [c for c in feature_names if c not in df_up.columns]
+                if missing:
+                    st.error(f"Missing {len(missing)} columns e.g. {missing[:5]}")
+                else:
+                    sample_features = df_up.iloc[int(row_ix)][feature_names]
+                    sample_meta = {"source": "csv"}
+
+        elif feature_mode == "Manual":
+            imp = pack.get("feature_importances") or []
+            top_feats = [x["feature"] for x in imp[:10]] if imp else feature_names[:10]
+            medians = pack.get("train_medians") or {}
+            cols = st.columns(2)
+            manual_vals = {}
+            for i, feat in enumerate(top_feats):
+                with cols[i % 2]:
+                    manual_vals[feat] = st.number_input(
+                        feat,
+                        value=float(medians.get(feat, 0.0)),
+                        format="%.6f",
+                        help=feature_meaning(feat),
+                        key=f"man_{feat}",
+                    )
+            if st.checkbox("Fill remaining with training medians", key="man_ok"):
+                full = {f: float(medians.get(f, 0.0)) for f in feature_names}
+                full.update(manual_vals)
+                sample_features = pd.Series(full)
+                sample_meta = {"source": "manual"}
+
+        if st.button("Run feature screening", type="primary", key="run_feat"):
+            if sample_features is None:
+                set_flash("error", "Feature screening failed: select or enter a sample first.")
+                st.rerun(scope="fragment")
+            else:
+                try:
+                    out = predict_from_features(dataset_key, sample_features, model_name, top_k=12)
+                    st.session_state["last_feat_result"] = out
+                    st.session_state["last_feat_meta"] = sample_meta
+                    set_flash(
+                        "success",
+                        f"Feature screening succeeded: {out.get('prediction', 'done')}",
+                    )
+                    st.rerun(scope="fragment")
+                except Exception as e:
+                    set_flash("error", f"Feature screening failed: {e}")
+                    st.rerun(scope="fragment")
+
+        out = st.session_state.get("last_feat_result")
+        if out:
+            from src.plain_language import build_feature_plain
+
+            if out["pred_label"] == 1:
+                st.error(f"### {out['prediction']}")
+            else:
+                st.success(f"### {out['prediction']}")
+            _render_everyday(build_feature_plain(out))
+            st.markdown('<div class="vs-section">Technical details</div>', unsafe_allow_html=True)
+            a, b = st.columns(2)
+            a.metric("P(PD)", f"{out['probability_pd']:.1%}")
+            b.metric("P(Healthy)", f"{out['probability_hc']:.1%}")
+            meta = st.session_state.get("last_feat_meta") or {}
+            if meta.get("true_label") is not None:
+                true = "PD" if meta["true_label"] == 1 else "HC"
+                match = meta["true_label"] == out["pred_label"]
+                st.write(f"Hold-out true **{true}** · match **{'Yes' if match else 'No'}**")
+            _render_explanation(out["explanation"])
+            st.warning(DISCLAIMER)

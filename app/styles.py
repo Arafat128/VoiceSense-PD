@@ -167,7 +167,27 @@ header [data-testid="stDecoration"] { display: none; }
   margin-top: 0;
   color: #f1f5f9;
 }
-.vs-muted { color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
+.vs-muted { color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+.vs-plain h3 { font-size: 1.35rem; line-height: 1.35; margin-bottom: 0.45rem; }
+.vs-plain h4 {
+  margin: 0.9rem 0 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+}
+.vs-plain ul { margin: 0.2rem 0 0.2rem 1.1rem; padding: 0; }
+.vs-plain li { margin: 0.28rem 0; color: #e2e8f0; line-height: 1.45; }
+.vs-trust {
+  display: inline-block;
+  margin-top: 0.15rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(56,189,248,0.12);
+  color: #bae6fd;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
 
 /* Result pills */
 .vs-result {
@@ -238,6 +258,15 @@ header [data-testid="stDecoration"] { display: none; }
   box-shadow: none !important;
 }
 
+/* Section switcher. Tabs reset to the first page on every file upload. */
+div[data-testid="stSegmentedControl"] {
+  margin: 0.2rem 0 1rem;
+}
+div[data-testid="stSegmentedControl"] button {
+  border-radius: 10px !important;
+  font-weight: 600;
+}
+
 /* Tabs */
 .stTabs [data-baseweb="tab-list"] {
   gap: 0.4rem;
@@ -304,6 +333,30 @@ div[data-baseweb="select"] > div,
   color: var(--accent);
   font-weight: 700;
   margin: 0.4rem 0 0.75rem;
+}
+
+.vs-privacy {
+  border-radius: 16px;
+  padding: 0.9rem 1.1rem;
+  margin: 0.35rem 0 1rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+.vs-privacy strong { color: #f8fafc; }
+.vs-privacy code {
+  background: rgba(15,23,42,0.75);
+  padding: 0.08rem 0.32rem;
+  border-radius: 6px;
+  font-size: 0.86em;
+}
+.vs-privacy.ok {
+  background: linear-gradient(135deg, rgba(52,211,153,0.14), rgba(15,23,42,0.55));
+  border: 1px solid rgba(52,211,153,0.28);
+}
+.vs-privacy.warn {
+  background: linear-gradient(135deg, rgba(251,191,36,0.14), rgba(15,23,42,0.55));
+  border: 1px solid rgba(251,191,36,0.3);
 }
 </style>
 """

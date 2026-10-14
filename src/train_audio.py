@@ -425,7 +425,7 @@ def train_live_audio_model(force_recompute: bool = False) -> Dict[str, Any]:
     default = results["app_default_model"]
     pointer = {
         "default_model": default,
-        "artifact": str(MODELS_DIR / f"live_audio_italian__{default}.joblib"),
+        "artifact": f"live_audio_italian__{default}.joblib",
         "feature_names": feature_names,
         "summary_metrics": results["models"][default]["metrics"],
     }
