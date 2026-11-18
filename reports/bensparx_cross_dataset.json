@@ -1,0 +1,2506 @@
+{
+  "datasets": {
+    "bensparx": {
+      "description": "BenSParX public CSV (labelled Bengali conversational speech)",
+      "rows": 900,
+      "persons": 250,
+      "pd_rows": 450
+    },
+    "uci_pd_speech": {
+      "description": "UCI PD Classification, Sakar 2019 (Turkish sustained /a/)",
+      "rows": 756,
+      "persons": 252,
+      "pd_rows": 564
+    },
+    "uci_replicated": {
+      "description": "UCI Replicated Acoustic, Naranjo 2016 (Spanish sustained /a/)",
+      "rows": 240,
+      "persons": 80,
+      "pd_rows": 120
+    },
+    "uci_parkinsons": {
+      "description": "UCI Parkinsons, Little 2007 (English-speaking, sustained phonation)",
+      "rows": 195,
+      "persons": 32,
+      "pd_rows": 147
+    }
+  },
+  "feature_sets": {},
+  "pairs": [
+    {
+      "version": "raw",
+      "train": "bensparx",
+      "test": "uci_pd_speech",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": true,
+      "person_auc": {
+        "value": 0.7635,
+        "ci95": [
+          0.6935,
+          0.8247
+        ]
+      },
+      "row_auc": {
+        "value": 0.7371,
+        "ci95": [
+          0.6753,
+          0.7936
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5078,
+        "ci95": [
+          0.5,
+          0.5259
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "bensparx",
+      "test": "uci_pd_speech",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": true,
+      "person_auc": {
+        "value": 0.892,
+        "ci95": [
+          0.8443,
+          0.9371
+        ]
+      },
+      "row_auc": {
+        "value": 0.8501,
+        "ci95": [
+          0.811,
+          0.8926
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6172,
+        "ci95": [
+          0.5639,
+          0.6735
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "bensparx",
+      "test": "uci_replicated",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.61,
+        "ci95": [
+          0.4689,
+          0.7258
+        ]
+      },
+      "row_auc": {
+        "value": 0.5983,
+        "ci95": [
+          0.4744,
+          0.7069
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "bensparx",
+      "test": "uci_replicated",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5813,
+        "ci95": [
+          0.4456,
+          0.7012
+        ]
+      },
+      "row_auc": {
+        "value": 0.5594,
+        "ci95": [
+          0.4465,
+          0.6581
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5125,
+        "ci95": [
+          0.4678,
+          0.5559
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "bensparx",
+      "test": "uci_parkinsons",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.8333,
+        "ci95": [
+          0.6495,
+          0.9696
+        ]
+      },
+      "row_auc": {
+        "value": 0.8073,
+        "ci95": [
+          0.6363,
+          0.9378
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "bensparx",
+      "test": "uci_parkinsons",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5833,
+        "ci95": [
+          0.3525,
+          0.8062
+        ]
+      },
+      "row_auc": {
+        "value": 0.5811,
+        "ci95": [
+          0.4031,
+          0.7515
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_pd_speech",
+      "test": "bensparx",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": true,
+      "person_auc": {
+        "value": 0.7545,
+        "ci95": [
+          0.6795,
+          0.8219
+        ]
+      },
+      "row_auc": {
+        "value": 0.7477,
+        "ci95": [
+          0.6774,
+          0.8081
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5286,
+        "ci95": [
+          0.503,
+          0.5635
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_pd_speech",
+      "test": "bensparx",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": true,
+      "person_auc": {
+        "value": 0.9073,
+        "ci95": [
+          0.8664,
+          0.9406
+        ]
+      },
+      "row_auc": {
+        "value": 0.8695,
+        "ci95": [
+          0.8296,
+          0.9041
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6067,
+        "ci95": [
+          0.5598,
+          0.6583
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_pd_speech",
+      "test": "uci_replicated",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6188,
+        "ci95": [
+          0.4832,
+          0.7318
+        ]
+      },
+      "row_auc": {
+        "value": 0.6014,
+        "ci95": [
+          0.476,
+          0.7077
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_pd_speech",
+      "test": "uci_replicated",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5769,
+        "ci95": [
+          0.4503,
+          0.7055
+        ]
+      },
+      "row_auc": {
+        "value": 0.5741,
+        "ci95": [
+          0.4625,
+          0.6765
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5125,
+        "ci95": [
+          0.412,
+          0.6083
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_pd_speech",
+      "test": "uci_parkinsons",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.8333,
+        "ci95": [
+          0.6495,
+          0.9696
+        ]
+      },
+      "row_auc": {
+        "value": 0.8101,
+        "ci95": [
+          0.6371,
+          0.9413
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_pd_speech",
+      "test": "uci_parkinsons",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.7917,
+        "ci95": [
+          0.6057,
+          0.9475
+        ]
+      },
+      "row_auc": {
+        "value": 0.7088,
+        "ci95": [
+          0.5596,
+          0.8367
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_replicated",
+      "test": "bensparx",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6575,
+        "ci95": [
+          0.5767,
+          0.7332
+        ]
+      },
+      "row_auc": {
+        "value": 0.646,
+        "ci95": [
+          0.5685,
+          0.7157
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5973,
+        "ci95": [
+          0.5307,
+          0.67
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_replicated",
+      "test": "bensparx",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5299,
+        "ci95": [
+          0.441,
+          0.6069
+        ]
+      },
+      "row_auc": {
+        "value": 0.4996,
+        "ci95": [
+          0.4337,
+          0.5599
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.4863,
+        "ci95": [
+          0.4147,
+          0.5559
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_replicated",
+      "test": "uci_pd_speech",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6535,
+        "ci95": [
+          0.5734,
+          0.7254
+        ]
+      },
+      "row_auc": {
+        "value": 0.6354,
+        "ci95": [
+          0.5661,
+          0.699
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6114,
+        "ci95": [
+          0.5494,
+          0.6779
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_replicated",
+      "test": "uci_pd_speech",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5407,
+        "ci95": [
+          0.4554,
+          0.6308
+        ]
+      },
+      "row_auc": {
+        "value": 0.5058,
+        "ci95": [
+          0.4427,
+          0.5687
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5314,
+        "ci95": [
+          0.4663,
+          0.6015
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_replicated",
+      "test": "uci_parkinsons",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.8177,
+        "ci95": [
+          0.6227,
+          0.9552
+        ]
+      },
+      "row_auc": {
+        "value": 0.7684,
+        "ci95": [
+          0.5862,
+          0.9075
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6667,
+        "ci95": [
+          0.5784,
+          0.7596
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_replicated",
+      "test": "uci_parkinsons",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5781,
+        "ci95": [
+          0.3133,
+          0.8112
+        ]
+      },
+      "row_auc": {
+        "value": 0.568,
+        "ci95": [
+          0.3885,
+          0.7359
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.4792,
+        "ci95": [
+          0.2857,
+          0.6538
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_parkinsons",
+      "test": "bensparx",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.684,
+        "ci95": [
+          0.6024,
+          0.761
+        ]
+      },
+      "row_auc": {
+        "value": 0.6706,
+        "ci95": [
+          0.5914,
+          0.7422
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_parkinsons",
+      "test": "bensparx",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.7252,
+        "ci95": [
+          0.6475,
+          0.7978
+        ]
+      },
+      "row_auc": {
+        "value": 0.7128,
+        "ci95": [
+          0.6447,
+          0.7742
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_parkinsons",
+      "test": "uci_pd_speech",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6791,
+        "ci95": [
+          0.5991,
+          0.7521
+        ]
+      },
+      "row_auc": {
+        "value": 0.6601,
+        "ci95": [
+          0.5903,
+          0.7253
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_parkinsons",
+      "test": "uci_pd_speech",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.733,
+        "ci95": [
+          0.6647,
+          0.7972
+        ]
+      },
+      "row_auc": {
+        "value": 0.7061,
+        "ci95": [
+          0.6496,
+          0.7646
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_parkinsons",
+      "test": "uci_replicated",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6225,
+        "ci95": [
+          0.4889,
+          0.7415
+        ]
+      },
+      "row_auc": {
+        "value": 0.6098,
+        "ci95": [
+          0.49,
+          0.7159
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "train": "uci_parkinsons",
+      "test": "uci_replicated",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6075,
+        "ci95": [
+          0.4676,
+          0.7275
+        ]
+      },
+      "row_auc": {
+        "value": 0.5949,
+        "ci95": [
+          0.4792,
+          0.7051
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5125,
+        "ci95": [
+          0.5,
+          0.5429
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "bensparx",
+      "test": "uci_pd_speech",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": true,
+      "person_auc": {
+        "value": 0.7794,
+        "ci95": [
+          0.7159,
+          0.8432
+        ]
+      },
+      "row_auc": {
+        "value": 0.7477,
+        "ci95": [
+          0.6922,
+          0.807
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5959,
+        "ci95": [
+          0.5429,
+          0.6507
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "bensparx",
+      "test": "uci_pd_speech",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": true,
+      "person_auc": {
+        "value": 0.8526,
+        "ci95": [
+          0.7967,
+          0.9028
+        ]
+      },
+      "row_auc": {
+        "value": 0.8097,
+        "ci95": [
+          0.7629,
+          0.8561
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6092,
+        "ci95": [
+          0.5566,
+          0.6667
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "bensparx",
+      "test": "uci_replicated",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6,
+        "ci95": [
+          0.4574,
+          0.7211
+        ]
+      },
+      "row_auc": {
+        "value": 0.5876,
+        "ci95": [
+          0.4562,
+          0.6989
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.55,
+        "ci95": [
+          0.4692,
+          0.632
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "bensparx",
+      "test": "uci_replicated",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5575,
+        "ci95": [
+          0.4263,
+          0.6799
+        ]
+      },
+      "row_auc": {
+        "value": 0.5521,
+        "ci95": [
+          0.4438,
+          0.6539
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.55,
+        "ci95": [
+          0.5122,
+          0.6026
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "bensparx",
+      "test": "uci_parkinsons",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.8646,
+        "ci95": [
+          0.7266,
+          0.9723
+        ]
+      },
+      "row_auc": {
+        "value": 0.8318,
+        "ci95": [
+          0.6967,
+          0.9405
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6667,
+        "ci95": [
+          0.4824,
+          0.8537
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "bensparx",
+      "test": "uci_parkinsons",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.8594,
+        "ci95": [
+          0.7304,
+          0.9711
+        ]
+      },
+      "row_auc": {
+        "value": 0.7989,
+        "ci95": [
+          0.6838,
+          0.9189
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5625,
+        "ci95": [
+          0.5,
+          0.7
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_pd_speech",
+      "test": "bensparx",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": true,
+      "person_auc": {
+        "value": 0.7764,
+        "ci95": [
+          0.7066,
+          0.8415
+        ]
+      },
+      "row_auc": {
+        "value": 0.7625,
+        "ci95": [
+          0.6979,
+          0.8242
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5442,
+        "ci95": [
+          0.5104,
+          0.5855
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_pd_speech",
+      "test": "bensparx",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": true,
+      "person_auc": {
+        "value": 0.8767,
+        "ci95": [
+          0.8211,
+          0.9192
+        ]
+      },
+      "row_auc": {
+        "value": 0.8382,
+        "ci95": [
+          0.7888,
+          0.8778
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5781,
+        "ci95": [
+          0.5351,
+          0.6208
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_pd_speech",
+      "test": "uci_replicated",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6062,
+        "ci95": [
+          0.4628,
+          0.7252
+        ]
+      },
+      "row_auc": {
+        "value": 0.5913,
+        "ci95": [
+          0.4622,
+          0.6996
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.55,
+        "ci95": [
+          0.4875,
+          0.614
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_pd_speech",
+      "test": "uci_replicated",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5606,
+        "ci95": [
+          0.4251,
+          0.6934
+        ]
+      },
+      "row_auc": {
+        "value": 0.5531,
+        "ci95": [
+          0.4402,
+          0.6659
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5375,
+        "ci95": [
+          0.4888,
+          0.597
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_pd_speech",
+      "test": "uci_parkinsons",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.849,
+        "ci95": [
+          0.6999,
+          0.9723
+        ]
+      },
+      "row_auc": {
+        "value": 0.8315,
+        "ci95": [
+          0.6925,
+          0.942
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6667,
+        "ci95": [
+          0.4824,
+          0.8537
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_pd_speech",
+      "test": "uci_parkinsons",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.8854,
+        "ci95": [
+          0.7401,
+          0.9852
+        ]
+      },
+      "row_auc": {
+        "value": 0.8022,
+        "ci95": [
+          0.6721,
+          0.9278
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_replicated",
+      "test": "bensparx",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6757,
+        "ci95": [
+          0.5908,
+          0.7487
+        ]
+      },
+      "row_auc": {
+        "value": 0.6669,
+        "ci95": [
+          0.5914,
+          0.734
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6426,
+        "ci95": [
+          0.5776,
+          0.706
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_replicated",
+      "test": "bensparx",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5618,
+        "ci95": [
+          0.4894,
+          0.6405
+        ]
+      },
+      "row_auc": {
+        "value": 0.5699,
+        "ci95": [
+          0.5093,
+          0.6347
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.541,
+        "ci95": [
+          0.4716,
+          0.6115
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_replicated",
+      "test": "uci_pd_speech",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6703,
+        "ci95": [
+          0.5929,
+          0.7406
+        ]
+      },
+      "row_auc": {
+        "value": 0.6533,
+        "ci95": [
+          0.5866,
+          0.7164
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6283,
+        "ci95": [
+          0.564,
+          0.6936
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_replicated",
+      "test": "uci_pd_speech",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.5609,
+        "ci95": [
+          0.4876,
+          0.6316
+        ]
+      },
+      "row_auc": {
+        "value": 0.5483,
+        "ci95": [
+          0.4943,
+          0.5972
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5512,
+        "ci95": [
+          0.4921,
+          0.6129
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_replicated",
+      "test": "uci_parkinsons",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.75,
+        "ci95": [
+          0.5426,
+          0.9111
+        ]
+      },
+      "row_auc": {
+        "value": 0.7268,
+        "ci95": [
+          0.5194,
+          0.8824
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.6875,
+        "ci95": [
+          0.4635,
+          0.8499
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_replicated",
+      "test": "uci_parkinsons",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6354,
+        "ci95": [
+          0.3328,
+          0.8765
+        ]
+      },
+      "row_auc": {
+        "value": 0.5957,
+        "ci95": [
+          0.3933,
+          0.7715
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5833,
+        "ci95": [
+          0.3746,
+          0.7549
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_parkinsons",
+      "test": "bensparx",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.7216,
+        "ci95": [
+          0.6397,
+          0.7943
+        ]
+      },
+      "row_auc": {
+        "value": 0.7161,
+        "ci95": [
+          0.6402,
+          0.783
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5312,
+        "ci95": [
+          0.5072,
+          0.5647
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_parkinsons",
+      "test": "bensparx",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.7324,
+        "ci95": [
+          0.6554,
+          0.7976
+        ]
+      },
+      "row_auc": {
+        "value": 0.7154,
+        "ci95": [
+          0.6474,
+          0.775
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5,
+        "ci95": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_parkinsons",
+      "test": "uci_pd_speech",
+      "model": "logreg",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.7177,
+        "ci95": [
+          0.6437,
+          0.7855
+        ]
+      },
+      "row_auc": {
+        "value": 0.7009,
+        "ci95": [
+          0.6334,
+          0.7615
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.552,
+        "ci95": [
+          0.5177,
+          0.5876
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_parkinsons",
+      "test": "uci_pd_speech",
+      "model": "random_forest",
+      "n_features": 11,
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.7143,
+        "ci95": [
+          0.6461,
+          0.7851
+        ]
+      },
+      "row_auc": {
+        "value": 0.6851,
+        "ci95": [
+          0.6284,
+          0.7462
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.4973,
+        "ci95": [
+          0.4916,
+          0.5
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_parkinsons",
+      "test": "uci_replicated",
+      "model": "logreg",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6219,
+        "ci95": [
+          0.4816,
+          0.7398
+        ]
+      },
+      "row_auc": {
+        "value": 0.6089,
+        "ci95": [
+          0.4843,
+          0.7187
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.5375,
+        "ci95": [
+          0.5,
+          0.5833
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "train": "uci_parkinsons",
+      "test": "uci_replicated",
+      "model": "random_forest",
+      "n_features": 9,
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "same_people": false,
+      "person_auc": {
+        "value": 0.6019,
+        "ci95": [
+          0.461,
+          0.7218
+        ]
+      },
+      "row_auc": {
+        "value": 0.5913,
+        "ci95": [
+          0.4682,
+          0.7014
+        ]
+      },
+      "person_balanced_accuracy_at_0.5": {
+        "value": 0.4875,
+        "ci95": [
+          0.4444,
+          0.5285
+        ]
+      }
+    }
+  ],
+  "within": [
+    {
+      "version": "raw",
+      "dataset": "bensparx",
+      "model": "logreg",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.7406,
+        "ci95": [
+          0.6641,
+          0.8122
+        ]
+      },
+      "row_auc": {
+        "value": 0.7336,
+        "ci95": [
+          0.6675,
+          0.7983
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "dataset": "bensparx",
+      "model": "random_forest",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.7459,
+        "ci95": [
+          0.6653,
+          0.816
+        ]
+      },
+      "row_auc": {
+        "value": 0.7024,
+        "ci95": [
+          0.622,
+          0.7755
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "dataset": "uci_pd_speech",
+      "model": "logreg",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.7392,
+        "ci95": [
+          0.6675,
+          0.8029
+        ]
+      },
+      "row_auc": {
+        "value": 0.716,
+        "ci95": [
+          0.651,
+          0.7741
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "dataset": "uci_pd_speech",
+      "model": "random_forest",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.7695,
+        "ci95": [
+          0.6957,
+          0.8442
+        ]
+      },
+      "row_auc": {
+        "value": 0.7139,
+        "ci95": [
+          0.6524,
+          0.785
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "dataset": "uci_replicated",
+      "model": "logreg",
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.6081,
+        "ci95": [
+          0.4751,
+          0.7313
+        ]
+      },
+      "row_auc": {
+        "value": 0.6128,
+        "ci95": [
+          0.4962,
+          0.7176
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "dataset": "uci_replicated",
+      "model": "random_forest",
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.5569,
+        "ci95": [
+          0.4398,
+          0.6921
+        ]
+      },
+      "row_auc": {
+        "value": 0.5406,
+        "ci95": [
+          0.4472,
+          0.6407
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "dataset": "uci_parkinsons",
+      "model": "logreg",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.7917,
+        "ci95": [
+          0.6,
+          0.951
+        ]
+      },
+      "row_auc": {
+        "value": 0.7738,
+        "ci95": [
+          0.5945,
+          0.9173
+        ]
+      }
+    },
+    {
+      "version": "raw",
+      "dataset": "uci_parkinsons",
+      "model": "random_forest",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.5729,
+        "ci95": [
+          0.321,
+          0.8472
+        ]
+      },
+      "row_auc": {
+        "value": 0.5716,
+        "ci95": [
+          0.3755,
+          0.79
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "dataset": "bensparx",
+      "model": "logreg",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.7607,
+        "ci95": [
+          0.6876,
+          0.8288
+        ]
+      },
+      "row_auc": {
+        "value": 0.7485,
+        "ci95": [
+          0.6835,
+          0.8122
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "dataset": "bensparx",
+      "model": "random_forest",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.7464,
+        "ci95": [
+          0.6664,
+          0.8165
+        ]
+      },
+      "row_auc": {
+        "value": 0.7023,
+        "ci95": [
+          0.6219,
+          0.7755
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "dataset": "uci_pd_speech",
+      "model": "logreg",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.765,
+        "ci95": [
+          0.6996,
+          0.8321
+        ]
+      },
+      "row_auc": {
+        "value": 0.7347,
+        "ci95": [
+          0.6771,
+          0.7955
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "dataset": "uci_pd_speech",
+      "model": "random_forest",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.7694,
+        "ci95": [
+          0.6958,
+          0.8443
+        ]
+      },
+      "row_auc": {
+        "value": 0.7139,
+        "ci95": [
+          0.6523,
+          0.7852
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "dataset": "uci_replicated",
+      "model": "logreg",
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.635,
+        "ci95": [
+          0.5026,
+          0.7575
+        ]
+      },
+      "row_auc": {
+        "value": 0.6281,
+        "ci95": [
+          0.5134,
+          0.7278
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "dataset": "uci_replicated",
+      "model": "random_forest",
+      "features": [
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.5581,
+        "ci95": [
+          0.4416,
+          0.6924
+        ]
+      },
+      "row_auc": {
+        "value": 0.5403,
+        "ci95": [
+          0.4476,
+          0.6408
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "dataset": "uci_parkinsons",
+      "model": "logreg",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.7917,
+        "ci95": [
+          0.584,
+          0.9555
+        ]
+      },
+      "row_auc": {
+        "value": 0.7751,
+        "ci95": [
+          0.5939,
+          0.9205
+        ]
+      }
+    },
+    {
+      "version": "standardized",
+      "dataset": "uci_parkinsons",
+      "model": "random_forest",
+      "features": [
+        "hnr",
+        "jitter_abs",
+        "jitter_local",
+        "jitter_ppq5",
+        "jitter_rap",
+        "nhr",
+        "shimmer_apq11",
+        "shimmer_apq3",
+        "shimmer_apq5",
+        "shimmer_db",
+        "shimmer_local"
+      ],
+      "person_auc": {
+        "value": 0.5729,
+        "ci95": [
+          0.321,
+          0.8472
+        ]
+      },
+      "row_auc": {
+        "value": 0.5743,
+        "ci95": [
+          0.3799,
+          0.7923
+        ]
+      }
+    }
+  ],
+  "verdict": "With the shared perturbation measures standardized per table, a BenSParX model reaches mean person AUC 0.72 on the Spanish and English tables, and models trained there reach 0.67 on BenSParX (Replicated <-> Parkinsons: 0.65). BenSParX <-> UCI pd_speech scores 0.82, but those are the same people's recordings, so it shows the copy, not transfer."
+}
