@@ -17,6 +17,7 @@ import pandas as pd
 import streamlit as st
 
 from app.widgets import render_everyday, render_explanation, render_flash, set_flash
+from src.batch import BatchError, read_csv_bytes, score_table, summary, validate
 from src.config import DATASETS, DISCLAIMER, feature_meaning
 from src.models.registry import list_available_models, load_holdout_samples, load_model
 from src.predict import predict_from_features
@@ -85,18 +86,14 @@ def feature_page() -> None:
                 st.error(str(e))
 
         elif feature_mode == "CSV upload":
-            up = st.file_uploader("CSV", type=["csv"], key="csv_feat")
-            if up is not None:
-                up.seek(0)
-                df_up = pd.read_csv(up)
-                st.dataframe(df_up.head(), width="stretch")
-                row_ix = st.number_input("Row", 0, max(0, len(df_up) - 1), 0, key="csv_row")
-                missing = [c for c in feature_names if c not in df_up.columns]
-                if missing:
-                    st.error(f"Missing {len(missing)} columns e.g. {missing[:5]}")
-                else:
-                    sample_features = df_up.iloc[int(row_ix)][feature_names]
-                    sample_meta = {"source": "csv"}
+            render_batch(dataset_key, model_name, feature_names)
+            up_df = st.session_state.get("batch_df")
+            if up_df is not None and st.session_state.get("batch_ok"):
+                row_ix = st.number_input(
+                    "Explain one row in detail (row number)", 1, len(up_df), 1, key="csv_row"
+                )
+                sample_features = up_df.iloc[int(row_ix) - 1][feature_names]
+                sample_meta = {"source": "csv", "row": int(row_ix)}
 
         elif feature_mode == "Manual":
             imp = pack.get("feature_importances") or []
@@ -162,3 +159,59 @@ def feature_page() -> None:
                     st.write(f"Hold-out true **{true}** · match **{'Yes' if match else 'No'}**")
             render_explanation(out["explanation"])
             st.warning(DISCLAIMER)
+
+
+def render_batch(dataset_key: str, model_name: str, feature_names: list[str]) -> None:
+    """Upload a CSV, check its columns, score every row, offer the results as CSV."""
+    st.caption(
+        f"Upload a CSV with the {len(feature_names)} feature columns of this dataset "
+        "(extra columns such as an id or label are kept). Every row is scored."
+    )
+    with st.expander("Required column names"):
+        st.code(", ".join(feature_names))
+        st.download_button(
+            "Download an empty template",
+            ",".join(feature_names) + "\n",
+            file_name=f"{dataset_key}_template.csv",
+            mime="text/csv",
+            key="batch_tpl",
+        )
+    up = st.file_uploader("CSV", type=["csv"], key="csv_feat")
+    if up is None:
+        st.session_state.pop("batch_df", None)
+        st.session_state["batch_ok"] = False
+        return
+    try:
+        df = read_csv_bytes(up.getvalue())
+        validate(df, feature_names)
+    except BatchError as e:
+        st.session_state["batch_ok"] = False
+        st.error(f"Cannot score this file: {e}")
+        return
+    st.session_state["batch_df"] = df
+    st.session_state["batch_ok"] = True
+    st.success(f"{len(df):,} rows · all {len(feature_names)} required columns present.")
+    if st.button(f"Score all {len(df):,} rows", key="batch_run"):
+        try:
+            st.session_state["batch_result"] = (dataset_key, model_name, score_table(dataset_key, df, model_name))
+        except BatchError as e:
+            st.error(f"Cannot score this file: {e}")
+    saved = st.session_state.get("batch_result")
+    if saved and saved[0] == dataset_key and saved[1] == model_name:
+        scored = saved[2]
+        s = summary(scored)
+        c = s["counts"]
+        line = (f"PD side {c.get('PD side', 0)} · Healthy side {c.get('Healthy side', 0)} · "
+                f"Uncertain {c.get('Uncertain', 0)}")
+        if "agreement_on_called_rows" in s:
+            line += (f" · matches the file's labels on {s['agreement_on_called_rows']:.0%} "
+                     f"of {s['called_rows']} called rows")
+        st.markdown(f"**Results** · {line}")
+        st.dataframe(scored, width="stretch", hide_index=True)
+        st.download_button(
+            "Download results CSV",
+            scored.to_csv(index=False).encode("utf-8"),
+            file_name=f"voicesense_{dataset_key}_{model_name}_scores.csv",
+            mime="text/csv",
+            key="batch_dl",
+        )
