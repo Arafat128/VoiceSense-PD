@@ -31,7 +31,6 @@ def test_receipt_omits_audio() -> None:
             },
             "imputed_features": ["secret"],
         },
-        "secondary": {},
         "warnings": [],
         "extraction_preview": {"common_top": {"praat_local_jitter": 0.01}},
     }

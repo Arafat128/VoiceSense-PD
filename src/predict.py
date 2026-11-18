@@ -278,13 +278,11 @@ def predict_from_audio(
     source: str | Path | bytes | bytearray,
     language_mode: str = "english",
     live_model_name: str | None = None,
-    also_score_language_models: bool = True,
     require_quality_ok: bool = True,
 ) -> dict[str, Any]:
     """
-    language_mode: 'english' | 'bangla' | 'auto'
-      - controls UI-facing model emphasis and optional UCI/BenSParX secondary scores
-      - primary decision always uses the consistent live-audio model (same extractor)
+    language_mode: 'english' | 'bangla' | 'auto'. Recorded for the receipt only.
+    The decision always comes from the live vowel model (same extractor as training).
     """
     extraction = extract_features(source)
     quality = extraction.quality.as_dict()
@@ -330,7 +328,6 @@ def predict_from_audio(
     else:
         adjusted_conf = float(primary["probability_hc"] * q_factor)
 
-    secondary = {}
     warnings = [
         (
             "Live laptop/phone mics differ from clinic recordings. "
@@ -348,74 +345,13 @@ def predict_from_audio(
             "PD pattern flagged only because probability was high. "
             "Re-record a quiet 5–8s sustained “aaa”/“আ—” and compare results."
         )
-    # Secondary language models often over-flag PD on consumer mics (domain shift).
-    # Keep them optional/supportive and apply the same conservative threshold wording.
-    if also_score_language_models:
-        try:
-            uci_pack = load_model("english_uci", "random_forest")
-            uci_names = uci_pack["feature_names"]
-            med = uci_pack.get("train_medians") or {}
-            vec, _imputed, comp = vectorize(extraction.uci, uci_names, med)
-            if comp >= 0.7:
-                frame = pd.DataFrame([vec], columns=uci_names)
-                proba = float(uci_pack["pipeline"].predict_proba(frame)[0, 1])
-                thr = thresholds_for(live_pack)
-                dec = _decide_from_proba(proba, thr)
-                secondary["english_uci"] = {
-                    "prediction": dec["prediction"] + " [secondary]",
-                    "probability_pd": proba,
-                    "completeness": comp,
-                    "note": (
-                        "Secondary English UCI-mapped score only. Often biased on laptop mics — "
-                        "do not override the primary live model."
-                    ),
-                }
-            else:
-                warnings.append(f"UCI secondary skipped (feature completeness {comp:.0%}).")
-        except Exception as exc:  # noqa: BLE001
-            warnings.append(f"UCI secondary unavailable: {exc}")
-
-        try:
-            bn_pack = load_model("bengali_bensparx", "random_forest")
-            bn_names = bn_pack["feature_names"]
-            med = bn_pack.get("train_medians") or {}
-            vec, imputed, comp = vectorize(extraction.bensparx, bn_names, med)
-            if comp >= 0.25:
-                frame = pd.DataFrame([vec], columns=bn_names)
-                proba = float(bn_pack["pipeline"].predict_proba(frame)[0, 1])
-                thr = thresholds_for(live_pack)
-                dec = _decide_from_proba(proba, thr)
-                secondary["bengali_bensparx"] = {
-                    "prediction": dec["prediction"] + " [secondary]",
-                    "probability_pd": proba,
-                    "completeness": comp,
-                    "imputed_count": len(imputed),
-                    "note": (
-                        "Secondary Bengali BenSParX-mapped score only (partial features). "
-                        "Supportive, not primary."
-                    ),
-                }
-            else:
-                warnings.append(f"BenSParX secondary skipped (completeness {comp:.0%}).")
-        except Exception as exc:  # noqa: BLE001
-            warnings.append(f"BenSParX secondary unavailable: {exc}")
-
-    # Language-mode messaging
-    if language_mode.lower() in ("english", "en"):
-        mode_note = (
-            "English mode: primary decision uses the live acoustic model (consistent train/serve features). "
-            "UCI English secondary score is shown when mapping quality allows."
-        )
-        highlight = "english_uci"
-    elif language_mode.lower() in ("bangla", "bengali", "bn"):
-        mode_note = (
-            "Bangla mode: primary decision uses the live acoustic model (acoustic PD cues are largely "
-            "language-robust). BenSParX secondary score is shown when mapping quality allows."
-        )
-        highlight = "bengali_bensparx"
-    else:
-        mode_note = "Auto mode: primary live acoustic model; language secondaries shown if available."
-        highlight = None
+    # The UCI English and BenSParX Bengali models were trained on feature
+    # tables from other recording setups. Mapping a microphone clip onto them
+    # is not valid, so they are not scored here (Feature lab still uses them).
+    mode_note = (
+        "Prompt language only changes the on-screen vowel prompt. The vowel model is the "
+        "same for every language; sustained-vowel measures do not depend on words."
+    )
 
     return {
         "status": "ok",
@@ -427,11 +363,8 @@ def predict_from_audio(
             "adjusted_confidence": adjusted_conf,
             "role": "PRIMARY (same feature extractor as training — most trustworthy for live audio)",
         },
-        "secondary": secondary,
-        "highlight_secondary": highlight,
         "warnings": warnings,
         "extraction_preview": {
-            "uci_subset": {k: extraction.uci[k] for k in list(extraction.uci)[:8]},
             "common_top": {
                 item["feature"]: extraction.common.get(item["feature"])
                 for item in (live_pack.get("feature_importances") or [])[:5]

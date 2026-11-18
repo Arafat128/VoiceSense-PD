@@ -129,7 +129,6 @@ def test_receipt_keeps_plain_words_and_drops_audio() -> None:
             "primary": primary,
             "plain": plain,
             "quality": _quality(),
-            "secondary": {},
             "warnings": [],
         },
         source_kind="upload:secret-name.wav",

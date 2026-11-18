@@ -169,7 +169,6 @@ def make_screening_receipt(
             "display_name": primary.get("display_name"),
             "explanation": primary.get("explanation"),
         },
-        "secondary": result.get("secondary") or {},
         "warnings": result.get("warnings") or [],
         "plain_language": _plain_for_receipt(result.get("plain")),
         "privacy": {

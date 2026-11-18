@@ -20,6 +20,7 @@ import streamlit as st
 
 from app.pages.privacy import render_export_receipt
 from app.widgets import (
+    decision_policy_text,
     validation_caption,
     live_audio_available,
     render_everyday,
@@ -51,7 +52,7 @@ def live_page() -> None:
                 <div class="vs-card">
                   <h3>Recording protocol</h3>
                   <p class="vs-muted">
-                    1. Choose English or Bangla mode<br/>
+                    1. Pick the prompt language you prefer<br/>
                     2. Quiet room · mic 15–20 cm away<br/>
                     3. Sustain <b>“aaa” / “আ—”</b> for 5–8 seconds<br/>
                     4. Repeat that vowel <b>three times</b>, with a pause between them<br/>
@@ -67,16 +68,15 @@ def live_page() -> None:
                 <div class="vs-card">
                   <h3>Decision policy</h3>
                   <p class="vs-muted">
-                    PD is flagged only when probability is <b>high (≥ ~72%)</b>.
-                    Mid-range scores return <b>Uncertain</b> to reduce false alarms on laptop mics.
+                    {policy_text}
                   </p>
                 </div>
-                """,
+                """.format(policy_text=decision_policy_text()),
                 unsafe_allow_html=True,
             )
 
         lang = st.radio(
-            "Language mode",
+            "Prompt language (changes the on-screen prompt only, not the model)",
             options=["english", "bangla"],
             format_func=lambda x: "English" if x == "english" else "Bangla (বাংলা)",
             horizontal=True,
@@ -161,7 +161,6 @@ def live_page() -> None:
                     result = predict_from_audio(
                         wav_bytes,
                         language_mode=lang,
-                        also_score_language_models=True,
                         require_quality_ok=True,
                     )
                     st.session_state["last_live_result"] = result
@@ -319,28 +318,7 @@ def live_page() -> None:
                 render_explanation(primary.get("explanation") or {}, "Why this decision")
 
                 warnings = list(result.get("warnings") or [])
-                secondary_notes = [
-                    note
-                    for note in warnings
-                    if "secondary skipped" in note.lower() or "secondary unavailable" in note.lower()
-                ]
-                other_warnings = [note for note in warnings if note not in secondary_notes]
-
-                sec = result.get("secondary") or {}
-                if sec:
-                    st.markdown('<div class="vs-section">Secondary scores (supportive only)</div>', unsafe_allow_html=True)
-                    for k, v in sec.items():
-                        st.write(
-                            f"**{k}**: {v['prediction']} · P(PD)={v['probability_pd']:.1%} · "
-                            f"completeness={v.get('completeness', 0):.0%}"
-                        )
-                        st.caption(v.get("note", ""))
-
-                if secondary_notes:
-                    st.info(
-                        "Secondary English/Bengali scores were skipped. "
-                        + " ".join(secondary_notes)
-                    )
+                other_warnings = warnings
 
                 for note in other_warnings:
                     st.caption(f"⚠ {note}")

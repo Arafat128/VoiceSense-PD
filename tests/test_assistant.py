@@ -74,26 +74,31 @@ def test_system_prompt_keeps_guardrails() -> None:
     assert "Never claim to see" in prompt
     assert "ignore them" in prompt
     assert "no tools" in prompt
-    assert "trained only on Italian" in prompt
-    assert "0.90" in prompt
+    assert "three public corpora" in prompt
+    assert "close to chance" in prompt
 
 
 def test_knowledge_covers_italian_english_and_bangla_models() -> None:
     text = load_knowledge()
-    assert "186" in text and "61" in text
-    assert "Italian" in text
+    for corpus in ("Italian", "UAMS", "Argentin"):
+        assert corpus in text
     assert "195" in text and "32" in text
     assert "UCI" in text
     assert "900" in text and "120" in text
     assert "BenSParX" in text
     assert "Feature lab" in text
-    assert "secondary" in text.lower()
-    assert "does not swap" in text.lower() or "do not replace the live decision" in text.lower()
+    assert "not valid" in text.lower()
+    assert "do not replace the live decision" in text.lower()
+    # Honest numbers: the held-out-corpus AUC and the retired 97% claim.
+    assert "close to chance" in text.lower()
+    assert "0.46" in text and "0.72" in text
+    assert "97%" in text
     for question in (
         "Was it trained on English or Bangla speech?",
         "Which model is used when I record?",
         "What does English or Bangla mode change?",
         "What do the UCI and BenSParX models score?",
+        "How accurate is it?",
     ):
         assert question in text
 

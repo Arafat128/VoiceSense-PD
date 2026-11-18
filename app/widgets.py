@@ -202,3 +202,31 @@ def validation_caption(m: dict) -> str:
         f"per-clip AUC {m.get('clip_auc', 0):.2f} (95% CI {c_lo:.2f}–{c_hi:.2f}). "
         "Same-corpus estimate; other microphones and languages score lower."
     )
+
+
+def decision_policy_text() -> str:
+    """Cut-offs and honest accuracy, read from the shipped model metadata."""
+    try:
+        from src.models.registry import load_live_audio_model
+        from src.predict import thresholds_for
+
+        pack = load_live_audio_model()
+        thr = thresholds_for(pack)
+        m = pack.get("metrics") or {}
+    except Exception:  # noqa: BLE001 - the card must render even without a model
+        return "The live model file is missing, so no cut-offs are available."
+    text = (
+        f"“Possible Parkinson's pattern” needs P(PD) ≥ <b>{thr['pd_high']:.0%}</b>; "
+        f"“No clear pattern” needs ≤ <b>{thr['hc_high']:.0%}</b>; anything between is "
+        "<b>Uncertain</b>. Cut-offs were picked from validation data (about 10% false alarms "
+        "and 10% misses on the training corpora)."
+    )
+    lodo = m.get("lodo_person_auc")
+    if lodo:
+        worst = min(lodo.values())
+        best = max(lodo.values())
+        text += (
+            f" On a corpus the model never saw, accuracy drops to AUC {worst:.2f}–{best:.2f} "
+            "(0.5 = chance), so treat any result as a research demo, not a screening result."
+        )
+    return text
