@@ -3,45 +3,45 @@
 Read this file from top to bottom. It is the click path:
 
 1. The person records a vowel or uploads an audio file. Nothing is scored yet.
-2. Analyze voice calls src/predict_audio.py, which listens and applies the safety rules.
+2. Analyze voice calls src/predict.py, which listens and applies the safety rules.
 3. The recording is then dropped from the page.
 4. An everyday-language card is drawn first. Technical numbers stay underneath.
 5. Up to three recordings are kept for this visit only, in the browser session.
 
 Shared drawing helpers live in app/widgets.py.
+Set VOICESENSE_DEBUG=1 to show the raw traceback after a failed analysis.
 """
 from __future__ import annotations
 
-import sys
+import os
 import traceback
-from pathlib import Path
-from typing import Optional
 
 import streamlit as st
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from app.notices import render_flash, set_flash
-from app.privacy_ui import render_export_receipt
+from app.pages.privacy import render_export_receipt
 from app.widgets import (
-    _live_audio_available,
-    _render_everyday,
-    _render_explanation,
-    _render_result_banner,
-    _to_wav_bytes,
+    live_audio_available,
+    render_everyday,
+    render_explanation,
+    render_flash,
+    render_result_banner,
+    set_flash,
+    to_wav_bytes,
 )
 from src.config import DISCLAIMER
 from src.privacy import bump_audio_nonce
+
+
+def _debug_enabled() -> bool:
+    return os.getenv("VOICESENSE_DEBUG") == "1"
 
 @st.fragment
 def live_page() -> None:
     render_flash()
     st.markdown('<div class="vs-section">Capture</div>', unsafe_allow_html=True)
 
-    if not _live_audio_available():
-        st.error("Live audio model missing. Run: `python -m src.train_audio`")
+    if not live_audio_available():
+        st.error("Live audio model missing. Run: `python -m training.train_audio`")
     else:
         c1, c2 = st.columns([1.1, 1])
         with c1:
@@ -90,7 +90,7 @@ def live_page() -> None:
         )
 
         rec_col, up_col = st.columns(2)
-        audio_raw: Optional[bytes] = None
+        audio_raw: bytes | None = None
         source_kind = None
         audio_nonce = int(st.session_state.get("audio_nonce", 0))
 
@@ -132,7 +132,7 @@ def live_page() -> None:
             analyze = st.button(
                 "Analyze voice",
                 type="primary",
-                use_container_width=True,
+                width="stretch",
                 disabled=audio_raw is None,
                 key="analyze_live",
             )
@@ -140,7 +140,7 @@ def live_page() -> None:
             discard = st.button(
                 "Discard recording",
                 type="secondary",
-                use_container_width=True,
+                width="stretch",
                 disabled=audio_raw is None,
                 key="discard_live",
             )
@@ -153,10 +153,10 @@ def live_page() -> None:
         if analyze and audio_raw is not None:
             with st.spinner("Normalizing audio · extracting clinical features · scoring models…"):
                 try:
-                    from src.predict_audio import predict_from_audio
+                    from src.predict import predict_from_audio
 
                     # Convert to WAV in-memory to stabilize decode path (no file download)
-                    wav_bytes = _to_wav_bytes(audio_raw)
+                    wav_bytes = to_wav_bytes(audio_raw)
                     result = predict_from_audio(
                         wav_bytes,
                         language_mode=lang,
@@ -195,7 +195,7 @@ def live_page() -> None:
                     else:
                         set_flash("error", f"Analysis failed: {result.get('status', 'unknown error')}")
                         st.rerun(scope="fragment")
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     set_flash("error", f"Analysis failed: {e}")
                     st.session_state["last_live_error"] = "".join(
                         traceback.format_exception_only(type(e), e)
@@ -208,8 +208,9 @@ def live_page() -> None:
 
         if st.session_state.get("last_live_error"):
             st.error(st.session_state["last_live_error"])
-            with st.expander("Technical traceback"):
-                st.code(st.session_state.get("last_live_trace") or "")
+            if _debug_enabled():
+                with st.expander("Technical traceback"):
+                    st.code(st.session_state.get("last_live_trace") or "")
             if st.button("Clear error", key="clr_live_err"):
                 st.session_state.pop("last_live_error", None)
                 st.session_state.pop("last_live_trace", None)
@@ -235,8 +236,8 @@ def live_page() -> None:
                 primary = result["primary"]
                 takes = list(st.session_state.get("live_takes") or [])
                 plain = build_plain_reading(result, takes)
-                _render_result_banner(primary)
-                _render_everyday(plain)
+                render_result_banner(primary)
+                render_everyday(plain)
                 st.caption(f"Recording set · {len(takes)} of 3 kept")
                 if takes and st.button("Start a new set of 3 recordings", key="reset_takes"):
                     st.session_state["live_takes"] = []
@@ -319,7 +320,15 @@ def live_page() -> None:
                         f"CV F1={m.get('cv_f1_mean', 0):.3f}±{m.get('cv_f1_std', 0):.3f}"
                     )
 
-                _render_explanation(primary.get("explanation") or {}, "Why this decision")
+                render_explanation(primary.get("explanation") or {}, "Why this decision")
+
+                warnings = list(result.get("warnings") or [])
+                secondary_notes = [
+                    note
+                    for note in warnings
+                    if "secondary skipped" in note.lower() or "secondary unavailable" in note.lower()
+                ]
+                other_warnings = [note for note in warnings if note not in secondary_notes]
 
                 sec = result.get("secondary") or {}
                 if sec:
@@ -331,8 +340,14 @@ def live_page() -> None:
                         )
                         st.caption(v.get("note", ""))
 
-                for w in result.get("warnings") or []:
-                    st.caption(f"⚠ {w}")
+                if secondary_notes:
+                    st.info(
+                        "Secondary English/Bengali scores were skipped. "
+                        + " ".join(secondary_notes)
+                    )
+
+                for note in other_warnings:
+                    st.caption(f"⚠ {note}")
 
                 st.warning(DISCLAIMER)
                 receipt_result = dict(result)

@@ -3,7 +3,7 @@ Train a high-quality live-audio PD screening model.
 
 Critical design (avoid mistakes):
 - Features for training are extracted with the SAME pipeline used at inference
-  (src.audio_features.extract_features → common feature set).
+  (src.features.audio.extract_features → common feature set).
 - Labels from Italian Parkinson's Voice dataset:
     PD  = "28 People with Parkinson's disease"
     HC  = "22 Elderly Healthy Control"  (age-closer; young HC excluded by default)
@@ -11,15 +11,15 @@ Critical design (avoid mistakes):
 - Quality filter: only keep recordings that pass audio quality gates.
 - Also saves median fill values and feature list for live inference.
 
-Optional:
-- Use young HC if INCLUDE_YOUNG_HC=True (more data, age confound risk).
+The Italian recordings are read from VOICESENSE_DATA_DIR or --data-dir.
+Young healthy controls are included by default (more data, age confound risk).
 """
 from __future__ import annotations
 
+import argparse
 import json
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import joblib
 import numpy as np
@@ -41,20 +41,21 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-ROOT = Path(__file__).resolve().parents[1]
-THESIS = ROOT.parent
-ITALIAN_ROOT = THESIS / "datasets" / "07_Italian_PD_Voice" / "italian_parkinson"
-MODELS_DIR = ROOT / "models"
-REPORTS_DIR = ROOT / "reports"
+from src.config import ITALIAN_RELATIVE_PATH
+from training.common import (
+    DISCLAIMER,
+    MODELS_DIR,
+    RANDOM_STATE,
+    REPORTS_DIR,
+    SPLIT_METHOD,
+    resolve_data_dir,
+    stratified_group_holdout,
+)
+
 CACHE_CSV = MODELS_DIR / "italian_common_features_cache.csv"
 
-RANDOM_STATE = 42
 # Include young HC for more healthy diversity (reduces "everything is PD" on new mics)
 INCLUDE_YOUNG_HC = True
-TEST_SIZE = 0.2
-
-# Prefer sustained-vowel-like files first when available (names often start with B1/B2)
-PREFERRED_PREFIXES = ("B1", "B2", "PR", "V", "a", "A")
 
 # Drop non-clinical / recording-protocol confounds from the live model
 DROP_FEATURES = {
@@ -114,7 +115,7 @@ DECISION_THRESHOLDS = {
 }
 
 
-def _label_and_subject(path: Path) -> Tuple[int, str, str]:
+def _label_and_subject(path: Path) -> tuple[int, str, str]:
     """
     Return (label, subject_id, cohort)
     label: 1 PD, 0 HC
@@ -144,26 +145,26 @@ def _label_and_subject(path: Path) -> Tuple[int, str, str]:
     return 0, f"YHC::{subject}", cohort
 
 
-def list_italian_wavs(prefer_b1_b2: bool = True) -> List[Path]:
+def list_italian_wavs(italian_root: Path, prefer_b1_b2: bool = True) -> list[Path]:
     """
     List training wavs.
     prefer_b1_b2: keep B1/B2 (and similar) sustained/task files when present per subject,
     which usually give cleaner phonation features and faster training.
     """
-    if not ITALIAN_ROOT.exists():
-        raise FileNotFoundError(f"Italian dataset not found: {ITALIAN_ROOT}")
-    wavs = sorted(ITALIAN_ROOT.rglob("*.wav"))
-    by_subject: Dict[str, List[Path]] = {}
-    for w in wavs:
+    if not italian_root.exists():
+        raise FileNotFoundError(f"Italian dataset not found: {italian_root}")
+    wavs = sorted(italian_root.rglob("*.wav"))
+    by_subject: dict[str, list[Path]] = {}
+    for wav in wavs:
         try:
-            label, subject, cohort = _label_and_subject(w)
+            _label, subject, cohort = _label_and_subject(wav)
         except ValueError:
             continue
         if cohort == "YHC" and not INCLUDE_YOUNG_HC:
             continue
-        by_subject.setdefault(subject, []).append(w)
+        by_subject.setdefault(subject, []).append(wav)
 
-    selected: List[Path] = []
+    selected: list[Path] = []
     for subject, files in by_subject.items():
         if prefer_b1_b2:
             preferred = [
@@ -180,8 +181,8 @@ def list_italian_wavs(prefer_b1_b2: bool = True) -> List[Path]:
     return selected
 
 
-def extract_dataset(force_recompute: bool = False) -> pd.DataFrame:
-    from .audio_features import extract_features
+def extract_dataset(data_dir: Path, force_recompute: bool = False) -> pd.DataFrame:
+    from src.features.audio import extract_features
 
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     if CACHE_CSV.exists() and not force_recompute:
@@ -189,17 +190,17 @@ def extract_dataset(force_recompute: bool = False) -> pd.DataFrame:
         return pd.read_csv(CACHE_CSV)
 
     rows = []
-    wavs = list_italian_wavs()
+    wavs = list_italian_wavs(Path(data_dir).joinpath(*ITALIAN_RELATIVE_PATH))
     print(f"Extracting features from {len(wavs)} Italian WAV files...")
     for i, w in enumerate(wavs, 1):
         try:
             label, subject, cohort = _label_and_subject(w)
             res = extract_features(w)
-            if not res.quality.ok:
-                # still keep borderline samples with warning flag; drop only catastrophic
-                if res.quality.duration_sec < 0.5 or res.quality.voiced_fraction < 0.05:
-                    print(f"  [skip bad] {w.name}: {res.quality.messages}")
-                    continue
+            # Keep borderline samples. Drop only catastrophic ones.
+            catastrophic = res.quality.duration_sec < 0.5 or res.quality.voiced_fraction < 0.05
+            if not res.quality.ok and catastrophic:
+                print(f"  [skip bad] {w.name}: {res.quality.messages}")
+                continue
             row = {
                 "path": str(w),
                 "file": w.name,
@@ -213,7 +214,7 @@ def extract_dataset(force_recompute: bool = False) -> pd.DataFrame:
             }
             row.update(res.common)
             rows.append(row)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"  [fail] {w}: {e}")
         if i % 25 == 0:
             print(f"  progress {i}/{len(wavs)}")
@@ -226,31 +227,11 @@ def extract_dataset(force_recompute: bool = False) -> pd.DataFrame:
     return df
 
 
-def _stratified_group_holdout(y, groups, test_size=TEST_SIZE, seed=RANDOM_STATE):
-    rng = np.random.RandomState(seed)
-    group_to_label = {}
-    group_to_idx = {}
-    for i, g in enumerate(groups):
-        group_to_idx.setdefault(g, []).append(i)
-        group_to_label[g] = int(y[i])
-    test_groups, train_groups = [], []
-    for lab in sorted(set(group_to_label.values())):
-        gs = [g for g, l in group_to_label.items() if l == lab]
-        gs = list(rng.permutation(gs))
-        n_test = max(1, int(round(len(gs) * test_size)))
-        if len(gs) - n_test < 1 and len(gs) > 1:
-            n_test = len(gs) - 1
-        test_groups.extend(gs[:n_test])
-        train_groups.extend(gs[n_test:])
-    train_idx = np.array([i for g in train_groups for i in group_to_idx[g]], dtype=int)
-    test_idx = np.array([i for g in test_groups for i in group_to_idx[g]], dtype=int)
-    return rng.permutation(train_idx), rng.permutation(test_idx)
-
-
-def train_live_audio_model(force_recompute: bool = False) -> Dict[str, Any]:
-    from .config import DISCLAIMER
-
-    df = extract_dataset(force_recompute=force_recompute)
+def train_live_audio_model(
+    data_dir: Path | None = None, force_recompute: bool = False
+) -> dict[str, Any]:
+    root = Path(data_dir) if data_dir is not None else resolve_data_dir()
+    df = extract_dataset(root, force_recompute=force_recompute)
     meta_cols = {
         "path",
         "file",
@@ -290,7 +271,7 @@ def train_live_audio_model(force_recompute: bool = False) -> Dict[str, Any]:
     y = df["label"].astype(int).to_numpy()
     groups = df["subject"].astype(str).to_numpy()
 
-    train_idx, test_idx = _stratified_group_holdout(y, groups)
+    train_idx, test_idx = stratified_group_holdout(y, groups)
     X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
     y_train, y_test = y[train_idx], y[test_idx]
     g_train, g_test = groups[train_idx], groups[test_idx]
@@ -329,16 +310,16 @@ def train_live_audio_model(force_recompute: bool = False) -> Dict[str, Any]:
     models = {"random_forest": rf, "svm_rbf": svm}
     results = {
         "dataset": "Italian_PD_Voice (EHC vs PD)" if not INCLUDE_YOUNG_HC else "Italian_PD_Voice (all HC vs PD)",
-        "n_samples": int(len(df)),
+        "n_samples": len(df),
         "n_subjects": int(df["subject"].nunique()),
         "class_counts": {"PD": int((y == 1).sum()), "HC": int((y == 0).sum())},
         "n_features": len(feature_names),
         "split": {
-            "method": "subject-stratified Group holdout 80/20",
-            "train_samples": int(len(train_idx)),
-            "test_samples": int(len(test_idx)),
-            "train_subjects": int(len(set(g_train))),
-            "test_subjects": int(len(set(g_test))),
+            "method": SPLIT_METHOD,
+            "train_samples": len(train_idx),
+            "test_samples": len(test_idx),
+            "train_subjects": len(set(g_train)),
+            "test_subjects": len(set(g_test)),
         },
         "models": {},
         "disclaimer": DISCLAIMER,
@@ -395,7 +376,7 @@ def train_live_audio_model(force_recompute: bool = False) -> Dict[str, Any]:
             "metrics": metrics,
             "disclaimer": DISCLAIMER,
             "input_type": "audio_wav",
-            "extraction": "src.audio_features.extract_features.common",
+            "extraction": "src.features.audio.extract_features.common",
             "quality_gates": {
                 "min_duration_sec": 1.0,
                 "min_voiced_fraction": 0.15,
@@ -438,6 +419,21 @@ def train_live_audio_model(force_recompute: bool = False) -> Dict[str, Any]:
     return results
 
 
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Train the live Italian acoustic model.")
+    parser.add_argument(
+        "--data-dir",
+        default=None,
+        help="Dataset root. Overrides VOICESENSE_DATA_DIR.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Recompute the feature cache instead of reading it.",
+    )
+    args = parser.parse_args(argv)
+    train_live_audio_model(resolve_data_dir(args.data_dir), force_recompute=args.force)
+
+
 if __name__ == "__main__":
-    force = "--force" in sys.argv
-    train_live_audio_model(force_recompute=force)
+    main()

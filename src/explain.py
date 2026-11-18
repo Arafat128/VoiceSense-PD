@@ -1,21 +1,21 @@
 """Detailed PD / non-PD explanations for a single prediction."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
-from .config import feature_meaning, DISCLAIMER
+from .config import DISCLAIMER, feature_meaning
 
 
 def explain_prediction(
-    model_pack: Dict[str, Any],
+    model_pack: dict[str, Any],
     feature_row: pd.Series,
     proba_pd: float,
     pred_label: int,
     top_k: int = 10,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Build a detailed explanation using:
     - model probability
@@ -27,7 +27,7 @@ def explain_prediction(
     than to the HC training mean (for that feature). This is clearer than generic
     high/low heuristics when class means are available.
     """
-    feature_names: List[str] = model_pack["feature_names"]
+    feature_names: list[str] = model_pack["feature_names"]
     importances = model_pack.get("feature_importances") or []
     means = model_pack.get("train_means") or {}
     stds = model_pack.get("train_stds") or {}
@@ -47,7 +47,7 @@ def explain_prediction(
 
         mu_pd = pd_means.get(feat)
         mu_hc = hc_means.get(feat)
-        supports_pd: Optional[bool] = None
+        supports_pd: bool | None = None
         dist_pd = dist_hc = None
         if mu_pd is not None and mu_hc is not None:
             dist_pd = abs(val - float(mu_pd))
@@ -85,8 +85,8 @@ def explain_prediction(
     local_scores.sort(key=lambda t: t["local_score"], reverse=True)
     top = local_scores[:top_k]
 
-    why_pd: List[Dict[str, Any]] = []
-    why_not: List[Dict[str, Any]] = []
+    why_pd: list[dict[str, Any]] = []
+    why_not: list[dict[str, Any]] = []
 
     for item in top:
         feat = item["feature"]
@@ -177,8 +177,7 @@ def explain_prediction(
     }
 
 
-def _comparison_text(item: Dict[str, Any]) -> str:
-    feat = item["feature"]
+def _comparison_text(item: dict[str, Any]) -> str:
     val = item["value"]
     parts = [f"Sample value = {val:.6g}."]
     if item.get("pd_mean") is not None and item.get("hc_mean") is not None:

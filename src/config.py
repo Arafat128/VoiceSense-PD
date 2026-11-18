@@ -2,11 +2,10 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-THESIS_ROOT = ROOT.parent
 
 DATASETS = {
     "english_uci": {
-        "path": THESIS_ROOT / "datasets" / "01_UCI_Parkinsons" / "parkinsons.data",
+        "relative_path": ("01_UCI_Parkinsons", "parkinsons.data"),
         "language": "English",
         "display_name": "UCI Parkinsons (English)",
         "label_col": "status",
@@ -16,7 +15,7 @@ DATASETS = {
         "negative_name": "Healthy Control (HC)",
     },
     "bengali_bensparx": {
-        "path": THESIS_ROOT / "datasets" / "02_BenSParX" / "BenSParX-main" / "BenSParX.csv",
+        "relative_path": ("02_BenSParX", "BenSParX-main", "BenSParX.csv"),
         "language": "Bengali",
         "display_name": "BenSParX (Bengali)",
         "label_col": "class",
@@ -31,6 +30,9 @@ MODELS_DIR = ROOT / "models"
 REPORTS_DIR = ROOT / "reports"
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
+
+# Public Italian Parkinson's Voice layout under VOICESENSE_DATA_DIR / --data-dir.
+ITALIAN_RELATIVE_PATH = ("07_Italian_PD_Voice", "italian_parkinson")
 
 # Clinical disclaimer shown in app and reports
 DISCLAIMER = (
@@ -92,7 +94,7 @@ FEATURE_GLOSSARY = {
 
 def feature_meaning(name: str) -> str:
     # Strip live-audio praat_ prefix for glossary lookup
-    base = name[6:] if name.startswith("praat_") else name
+    base = name.removeprefix("praat_")
     if name in FEATURE_GLOSSARY:
         return FEATURE_GLOSSARY[name]
     if base in FEATURE_GLOSSARY:

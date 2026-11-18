@@ -1,7 +1,7 @@
 """On-device privacy banner and a receipt that contains no recording."""
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import streamlit as st
 
@@ -38,7 +38,7 @@ def render_privacy_banner() -> bool:
     return local
 
 
-def render_export_receipt(result: Dict[str, Any], source_kind: Optional[str]) -> None:
+def render_export_receipt(result: dict[str, Any], source_kind: str | None) -> None:
     if not result or result.get("status") != "ok":
         return
     local, _ = is_local_runtime()
@@ -62,7 +62,7 @@ def render_export_receipt(result: Dict[str, Any], source_kind: Optional[str]) ->
         file_name="voicesense-screening-receipt.json",
         mime="application/json",
         key="dl_receipt",
-        use_container_width=True,
+        width="stretch",
     )
     with st.expander("Receipt preview"):
         st.code(payload, language="json")

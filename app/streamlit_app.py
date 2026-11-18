@@ -2,10 +2,10 @@
 
 This file does not score a voice. It draws the frame and opens one screen:
 
-  app/live_page.py       microphone or audio upload  (default)
-  app/feature_page.py    spreadsheet lab
-  app/privacy_ui.py      on-device notice and receipt (no identity proof)
-  the About block below  how the method is limited
+  app/pages/live.py       microphone or audio upload  (default)
+  app/pages/feature.py    spreadsheet lab
+  app/pages/privacy.py    on-device notice and receipt
+  app/pages/about.py      how the method is limited
 
 The engine map is the docstring in src/__init__.py.
 """
@@ -20,11 +20,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.feature_page import feature_page
-from app.live_page import live_page
-from app.notices import render_flash
-from app.privacy_ui import render_privacy_banner, render_privacy_tab
-from app.styles import PREMIUM_CSS
+from app.pages.about import render_about
+from app.pages.feature import feature_page
+from app.pages.live import live_page
+from app.pages.privacy import render_privacy_banner, render_privacy_tab
+from app.styles import inject_styles
+from app.widgets import render_flash
 from src.config import DISCLAIMER
 from src.privacy import wipe_audio_keys
 
@@ -35,102 +36,79 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-st.markdown(PREMIUM_CSS, unsafe_allow_html=True)
 
-wipe_audio_keys(st.session_state)
-if "audio_nonce" not in st.session_state:
-    st.session_state["audio_nonce"] = 0
+def render() -> None:
+    inject_styles()
 
-st.markdown(
-    """
-    <div class="vs-hero">
-      <div class="vs-kicker"><span></span> VoiceSense Research Platform</div>
-      <h1 class="vs-title">Voice-based <em>Parkinson’s</em> screening</h1>
-      <p class="vs-sub">
-        Premium research interface for English &amp; Bangla voice analysis.
-        Live microphone or feature-table input · explainable ML · screening support only.
-      </p>
-      <div class="vs-badges">
-        <div class="vs-badge">On-device by default</div>
-        <div class="vs-badge">Subject-aware models</div>
-        <div class="vs-badge">Clinical acoustic features</div>
-        <div class="vs-badge">Conservative PD threshold</div>
-        <div class="vs-badge">Not a medical diagnosis</div>
-      </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+    wipe_audio_keys(st.session_state)
+    if "audio_nonce" not in st.session_state:
+        st.session_state["audio_nonce"] = 0
 
-st.info(DISCLAIMER)
-render_flash()
-render_privacy_banner()
-
-PAGES = (
-    "Live voice studio",
-    "Feature lab",
-    "Privacy",
-    "About & method",
-)
-page = st.segmented_control(
-    "Section",
-    PAGES,
-    default="Live voice studio",
-    key="active_page",
-    required=True,
-    label_visibility="collapsed",
-    width="stretch",
-)
-if page not in PAGES:
-    page = "Live voice studio"
-
-if page == "Live voice studio":
-    live_page()
-elif page == "Feature lab":
-    feature_page()
-elif page == "Privacy":
-    render_privacy_tab()
-elif page == "About & method":
     st.markdown(
         """
-        <div class="vs-card">
-          <h3>Method highlights</h3>
-          <p class="vs-muted">
-            English UCI &amp; Bengali BenSParX feature models · Live acoustic model trained with the
-            same Praat/librosa extractor used at inference · subject/speaker-aware validation.
-            A live call is shown only when the clip is at least 4 seconds, clean enough to trust
-            pitch and loudness, and the random-forest and SVM checks agree. Three separate vowels
-            are read together. One home-microphone clip is not treated as a final answer.
+        <div class="vs-hero">
+          <div class="vs-kicker"><span></span> VoiceSense Research Platform</div>
+          <h1 class="vs-title">Voice-based <em>Parkinson’s</em> screening</h1>
+          <p class="vs-sub">
+            Premium research interface for English &amp; Bangla voice analysis.
+            Live microphone or feature-table input · explainable ML · screening support only.
           </p>
-          <h3>About the IDM popup</h3>
-          <p class="vs-muted">
-            Internet Download Manager sometimes intercepts browser media streams (Error 0x80080005).
-            That is <b>not</b> a model crash. Leave audio preview off, or exclude localhost from IDM.
-            Analysis uses in-memory WAV conversion and does not require a file download.
-          </p>
-          <h3>Privacy</h3>
-          <p class="vs-muted">
-            Live screening is designed to run on your machine. Successful analysis
-            discards the recording. The receipt download does not include the WAV.
-            Identity proofs are not part of this repository.
-          </p>
-          <h3>Where the code lives</h3>
-          <p class="vs-muted">
-            Screens: <code>app/live_page.py</code>, <code>app/feature_page.py</code>, <code>app/privacy_ui.py</code>.
-            Engine map: <code>src/__init__.py</code>.
-          </p>
-          <h3>Disclaimer</h3>
-          <p class="vs-muted">Research screening support only. Not a clinical diagnostic device.</p>
+          <div class="vs-badges">
+            <div class="vs-badge">On-device by default</div>
+            <div class="vs-badge">Subject-aware models</div>
+            <div class="vs-badge">Clinical acoustic features</div>
+            <div class="vs-badge">Conservative PD threshold</div>
+            <div class="vs-badge">Not a medical diagnosis</div>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-st.markdown(
-    """
-    <div class="vs-footer">
-      VoiceSense · BAUET thesis research prototype · Explainable voice screening · Not for clinical diagnosis
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+    st.info(DISCLAIMER)
+    render_flash()
+    render_privacy_banner()
+
+    pages = (
+        "Live voice studio",
+        "Feature lab",
+        "Privacy",
+        "About & method",
+    )
+    page = st.segmented_control(
+        "Section",
+        pages,
+        default="Live voice studio",
+        key="active_page",
+        required=True,
+        label_visibility="collapsed",
+        width="stretch",
+    )
+    if page not in pages:
+        page = "Live voice studio"
+
+    if page == "Live voice studio":
+        live_page()
+    elif page == "Feature lab":
+        feature_page()
+    elif page == "Privacy":
+        render_privacy_tab()
+    elif page == "About & method":
+        render_about()
+
+    st.markdown(
+        """
+        <div class="vs-footer">
+          VoiceSense · BAUET thesis research prototype · Explainable voice screening · Not for clinical diagnosis
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# app/pages/ holds imported screens. Calling navigation tells Streamlit not to
+# turn those modules into a second sidebar menu.
+st.navigation(
+    [st.Page(render, title="VoiceSense", default=True)],
+    position="hidden",
+).run()

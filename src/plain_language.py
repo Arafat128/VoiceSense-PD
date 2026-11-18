@@ -6,10 +6,10 @@ result into sentences a non-specialist can follow. It never changes a score.
 from __future__ import annotations
 
 import statistics
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
-def _family(feature: str) -> Optional[str]:
+def _family(feature: str) -> str | None:
     """Group acoustic names into ideas a listener can picture.
 
     Average pitch is separated on purpose. It varies with sex and age and is
@@ -75,9 +75,9 @@ def _chance_sentence(probability: float) -> str:
     )
 
 
-def _heard_lines(explanation: Dict[str, Any]) -> List[str]:
+def _heard_lines(explanation: dict[str, Any]) -> list[str]:
     """One plain sentence per voice idea, skipping ideas that point both ways."""
-    sides: Dict[str, str] = {}
+    sides: dict[str, str] = {}
     conflicted = set()
     groups = (
         ("pd", explanation.get("why_pd") or []),
@@ -94,7 +94,7 @@ def _heard_lines(explanation: Dict[str, Any]) -> List[str]:
                 continue
             sides.setdefault(family, side)
 
-    lines: List[str] = []
+    lines: list[str] = []
     # Lead with the clues that actually describe voice quality. Average pitch last.
     order = ["pitch_wobble", "loudness", "breath", "flatness", "quiet", "voiced", "average_pitch"]
     for family in order:
@@ -107,7 +107,7 @@ def _heard_lines(explanation: Dict[str, Any]) -> List[str]:
     return lines
 
 
-def combine_takes(takes: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+def combine_takes(takes: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Summarize up to three separate vowels.
 
     Clinics and the public PD corpora typically keep three sustained /a/ vowels.
@@ -167,7 +167,7 @@ def combine_takes(takes: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     }
 
 
-def _trust(primary: Dict[str, Any], takes: List[Dict[str, Any]]) -> Dict[str, str]:
+def _trust(primary: dict[str, Any], takes: list[dict[str, Any]]) -> dict[str, str]:
     limits = primary.get("recording_limits") or []
     agreement = primary.get("agreement") or {}
     agree = bool(agreement.get("agree"))
@@ -211,9 +211,9 @@ def _trust(primary: Dict[str, Any], takes: List[Dict[str, Any]]) -> Dict[str, st
 
 
 def build_plain_reading(
-    result: Dict[str, Any],
-    takes: Optional[List[Dict[str, Any]]] = None,
-) -> Dict[str, Any]:
+    result: dict[str, Any],
+    takes: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Plain reading for one live-voice result, plus the set of recent takes."""
     primary = dict(result.get("primary") or {})
     code = primary.get("decision_code") or "UNCERTAIN"
@@ -277,7 +277,7 @@ def build_plain_reading(
     }
 
 
-def build_feature_plain(result: Dict[str, Any]) -> Dict[str, Any]:
+def build_feature_plain(result: dict[str, Any]) -> dict[str, Any]:
     """Plain reading for a feature-table score, which never heard a microphone."""
     code = "PD" if result.get("pred_label") == 1 else "HC"
     probability = float(result.get("probability_pd") or 0.0)
@@ -317,7 +317,7 @@ def build_feature_plain(result: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def plain_quality_rejection(result: Dict[str, Any]) -> str:
+def plain_quality_rejection(result: dict[str, Any]) -> str:
     return (
         "This recording was not scored. It was too short, too quiet, or too noisy "
         "for the voice measures to mean anything. Record a steady vowel again for 5 to 8 seconds in a quiet room."

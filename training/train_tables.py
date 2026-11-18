@@ -7,16 +7,19 @@ Correct methodology:
 - Random Forest + RBF-SVM
 - Metrics: accuracy, precision, recall, F1, ROC-AUC, confusion matrix
 - Saves models, scalers, metrics, feature importances, example holdout samples
+
+Offline only. Pass the dataset root with --data-dir or VOICESENSE_DATA_DIR.
 """
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Any
 
 import joblib
 import numpy as np
-import pandas as pd
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     accuracy_score,
@@ -27,17 +30,24 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import GroupShuffleSplit, StratifiedGroupKFold, cross_val_score
+from sklearn.model_selection import StratifiedGroupKFold, cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.calibration import CalibratedClassifierCV
 from sklearn.svm import SVC
 
-from .config import MODELS_DIR, REPORTS_DIR, RANDOM_STATE, TEST_SIZE, DISCLAIMER
-from .data_loading import load_dataset, list_datasets
+from training.common import (
+    DISCLAIMER,
+    MODELS_DIR,
+    RANDOM_STATE,
+    REPORTS_DIR,
+    SPLIT_METHOD,
+    resolve_data_dir,
+    stratified_group_holdout,
+)
+from training.data_loading import list_datasets, load_dataset
 
 
-def _metrics(y_true, y_pred, y_prob) -> Dict[str, Any]:
+def _metrics(y_true, y_pred, y_prob) -> dict[str, Any]:
     out = {
         "accuracy": float(accuracy_score(y_true, y_pred)),
         "precision": float(precision_score(y_true, y_pred, zero_division=0)),
@@ -52,7 +62,7 @@ def _metrics(y_true, y_pred, y_prob) -> Dict[str, Any]:
     return out
 
 
-def _build_models() -> Dict[str, Pipeline]:
+def _build_models() -> dict[str, Pipeline]:
     rf = Pipeline(
         steps=[
             ("scaler", StandardScaler()),
@@ -89,57 +99,7 @@ def _build_models() -> Dict[str, Pipeline]:
     return {"random_forest": rf, "svm_rbf": svm}
 
 
-def _stratified_group_holdout(
-    y: np.ndarray, groups: np.ndarray, test_size: float = TEST_SIZE, seed: int = RANDOM_STATE
-) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Subject-aware hold-out that also balances PD/HC subjects in train and test.
-
-    GroupShuffleSplit alone can put almost all healthy subjects on one side when
-    healthy subject count is small (UCI has only 8 HC subjects). That creates a
-    misleading hold-out. This routine samples test subjects within each class.
-    """
-    rng = np.random.RandomState(seed)
-    # one label per group (datasets guarantee pure groups)
-    group_to_label = {}
-    group_to_indices = {}
-    for i, g in enumerate(groups):
-        group_to_indices.setdefault(g, []).append(i)
-        group_to_label[g] = int(y[i])
-
-    test_groups = []
-    train_groups = []
-    for label in sorted(set(group_to_label.values())):
-        g_list = [g for g, lab in group_to_label.items() if lab == label]
-        g_list = list(rng.permutation(g_list))
-        n_test = max(1, int(round(len(g_list) * test_size)))
-        # leave at least 1 train subject per class when possible
-        if len(g_list) - n_test < 1 and len(g_list) > 1:
-            n_test = len(g_list) - 1
-        test_groups.extend(g_list[:n_test])
-        train_groups.extend(g_list[n_test:])
-
-    test_set = set(test_groups)
-    train_idx = np.array(
-        [i for g in train_groups for i in group_to_indices[g]], dtype=int
-    )
-    test_idx = np.array(
-        [i for g in test_groups for i in group_to_indices[g]], dtype=int
-    )
-    # shuffle sample order
-    train_idx = rng.permutation(train_idx)
-    test_idx = rng.permutation(test_idx)
-    return train_idx, test_idx
-
-
-def _group_holdout_split(
-    X: pd.DataFrame, y: np.ndarray, groups: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray]:
-    """80/20 hold-out that keeps all samples of a subject on one side (class-stratified by subject)."""
-    return _stratified_group_holdout(y, groups, test_size=TEST_SIZE, seed=RANDOM_STATE)
-
-
-def _feature_importance(pipe: Pipeline, feature_names: List[str]) -> List[Dict[str, Any]]:
+def _feature_importance(pipe: Pipeline, feature_names: list[str]) -> list[dict[str, Any]]:
     clf = pipe.named_steps["clf"]
     if hasattr(clf, "feature_importances_"):
         imp = clf.feature_importances_
@@ -153,12 +113,12 @@ def _feature_importance(pipe: Pipeline, feature_names: List[str]) -> List[Dict[s
     return []
 
 
-def train_one(dataset_key: str) -> Dict[str, Any]:
-    data = load_dataset(dataset_key)
+def train_one(dataset_key: str, data_dir: Path) -> dict[str, Any]:
+    data = load_dataset(dataset_key, data_dir)
     X, y, groups = data.X, data.y, data.groups
     feature_names = data.feature_names
 
-    train_idx, test_idx = _group_holdout_split(X, y, groups)
+    train_idx, test_idx = stratified_group_holdout(y, groups)
     X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
     y_train, y_test = y[train_idx], y[test_idx]
     g_train, g_test = groups[train_idx], groups[test_idx]
@@ -169,23 +129,23 @@ def train_one(dataset_key: str) -> Dict[str, Any]:
         raise RuntimeError(f"Subject leakage detected for {dataset_key}: {sorted(leak)[:10]}")
 
     models = _build_models()
-    results: Dict[str, Any] = {
+    results: dict[str, Any] = {
         "dataset_key": dataset_key,
         "display_name": data.display_name,
         "language": data.language,
-        "n_samples": int(len(y)),
+        "n_samples": len(y),
         "n_features": len(feature_names),
-        "n_subjects": int(len(set(groups))),
+        "n_subjects": len(set(groups)),
         "class_counts": {
             "PD": int((y == 1).sum()),
             "HC": int((y == 0).sum()),
         },
         "split": {
-            "train_samples": int(len(y_train)),
-            "test_samples": int(len(y_test)),
-            "train_subjects": int(len(set(g_train))),
-            "test_subjects": int(len(set(g_test))),
-            "method": "GroupShuffleSplit 80/20 (subject/speaker aware)",
+            "train_samples": len(y_train),
+            "test_samples": len(y_test),
+            "train_subjects": len(set(g_train)),
+            "test_subjects": len(set(g_test)),
+            "method": SPLIT_METHOD,
             "random_state": RANDOM_STATE,
         },
         "models": {},
@@ -195,7 +155,6 @@ def train_one(dataset_key: str) -> Dict[str, Any]:
 
     best_name = None
     best_f1 = -1.0
-    best_pipe = None
 
     for model_name, pipe in models.items():
         pipe.fit(X_train, y_train)
@@ -267,7 +226,6 @@ def train_one(dataset_key: str) -> Dict[str, Any]:
         if metrics["f1"] > best_f1:
             best_f1 = metrics["f1"]
             best_name = model_name
-            best_pipe = pipe
 
     results["best_model"] = best_name
 
@@ -315,12 +273,13 @@ def train_one(dataset_key: str) -> Dict[str, Any]:
     return results
 
 
-def train_all() -> Dict[str, Any]:
+def train_all(data_dir: Path | None = None) -> dict[str, Any]:
+    root = Path(data_dir) if data_dir is not None else resolve_data_dir()
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     summary = {}
     for key in list_datasets():
-        summary[key] = train_one(key)
+        summary[key] = train_one(key, root)
     summary_path = REPORTS_DIR / "training_summary.json"
     # store compact summary
     compact = {
@@ -342,5 +301,18 @@ def train_all() -> Dict[str, Any]:
     return summary
 
 
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description="Train the UCI and BenSParX feature-table models."
+    )
+    parser.add_argument(
+        "--data-dir",
+        default=None,
+        help="Dataset root. Overrides VOICESENSE_DATA_DIR.",
+    )
+    args = parser.parse_args(argv)
+    train_all(resolve_data_dir(args.data_dir))
+
+
 if __name__ == "__main__":
-    train_all()
+    main()

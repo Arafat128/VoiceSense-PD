@@ -6,30 +6,21 @@ Three ways in, picked with the control at the top of this screen:
 - CSV upload: your own table. The column names must match the chosen dataset.
 - Manual: type the top features. The rest can be filled with training averages.
 
-Scoring is src/predict.py. Training those models is src/train.py.
+Scoring is src/predict.py. Models load once through src/models/registry.py.
+Training those models is training/train_tables.py.
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pandas as pd
 import streamlit as st
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from app.notices import render_flash, set_flash
-from app.widgets import _render_everyday, _render_explanation
+from app.widgets import render_everyday, render_explanation, render_flash, set_flash
 from src.config import DATASETS, DISCLAIMER, feature_meaning
-from src.predict import (
-    list_available_models,
-    load_holdout_samples,
-    load_model,
-    predict_from_features,
-)
+from src.models.registry import list_available_models, load_holdout_samples, load_model
+from src.predict import predict_from_features
+
 
 @st.fragment
 def feature_page() -> None:
@@ -44,7 +35,7 @@ def feature_page() -> None:
         }
     )
     if not ds_keys:
-        st.error("No feature models found. Run `python -m src.train`")
+        st.error("No feature models found. Run `python -m training.train_tables`")
     else:
         dataset_labels = {k: DATASETS.get(k, {}).get("display_name", k) for k in ds_keys}
         dataset_key = st.selectbox(
@@ -73,7 +64,7 @@ def feature_page() -> None:
             label_visibility="collapsed",
         )
         sample_features = None
-        sample_meta: Dict[str, Any] = {}
+        sample_meta: dict[str, Any] = {}
 
         if feature_mode == "Demo hold-out":
             try:
@@ -89,7 +80,7 @@ def feature_page() -> None:
                     "true_label": int(row["true_label"]),
                 }
                 sample_features = row[feature_names]
-                st.dataframe(pd.DataFrame(sample_features).T, use_container_width=True, hide_index=True)
+                st.dataframe(pd.DataFrame(sample_features).T, width="stretch", hide_index=True)
             except FileNotFoundError as e:
                 st.error(str(e))
 
@@ -98,7 +89,7 @@ def feature_page() -> None:
             if up is not None:
                 up.seek(0)
                 df_up = pd.read_csv(up)
-                st.dataframe(df_up.head(), use_container_width=True)
+                st.dataframe(df_up.head(), width="stretch")
                 row_ix = st.number_input("Row", 0, max(0, len(df_up) - 1), 0, key="csv_row")
                 missing = [c for c in feature_names if c not in df_up.columns]
                 if missing:
@@ -142,7 +133,7 @@ def feature_page() -> None:
                         f"Feature screening succeeded: {out.get('prediction', 'done')}",
                     )
                     st.rerun(scope="fragment")
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     set_flash("error", f"Feature screening failed: {e}")
                     st.rerun(scope="fragment")
 
@@ -154,7 +145,7 @@ def feature_page() -> None:
                 st.error(f"### {out['prediction']}")
             else:
                 st.success(f"### {out['prediction']}")
-            _render_everyday(build_feature_plain(out))
+            render_everyday(build_feature_plain(out))
             st.markdown('<div class="vs-section">Technical details</div>', unsafe_allow_html=True)
             a, b = st.columns(2)
             a.metric("P(PD)", f"{out['probability_pd']:.1%}")
@@ -164,5 +155,5 @@ def feature_page() -> None:
                 true = "PD" if meta["true_label"] == 1 else "HC"
                 match = meta["true_label"] == out["pred_label"]
                 st.write(f"Hold-out true **{true}** · match **{'Yes' if match else 'No'}**")
-            _render_explanation(out["explanation"])
+            render_explanation(out["explanation"])
             st.warning(DISCLAIMER)

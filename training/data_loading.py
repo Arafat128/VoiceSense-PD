@@ -1,14 +1,17 @@
-"""Load English UCI and Bengali BenSParX datasets with subject/speaker IDs."""
+"""Load English UCI and Bengali BenSParX datasets with subject/speaker IDs.
+
+Offline only. The dataset root comes from the caller (``--data-dir`` or
+``VOICESENSE_DATA_DIR``).
+"""
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
-from typing import List
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from .config import DATASETS
+from src.config import DATASETS
 
 
 @dataclass
@@ -19,7 +22,7 @@ class DatasetBundle:
     X: pd.DataFrame
     y: np.ndarray
     groups: np.ndarray
-    feature_names: List[str]
+    feature_names: list[str]
     sample_ids: np.ndarray
     positive_name: str
     negative_name: str
@@ -41,12 +44,12 @@ def _bensparx_speaker_id(sample_id: str) -> str:
     return s
 
 
-def load_dataset(key: str) -> DatasetBundle:
+def load_dataset(key: str, data_dir: Path) -> DatasetBundle:
     if key not in DATASETS:
         raise KeyError(f"Unknown dataset key: {key}. Choose from {list(DATASETS)}")
 
     meta = DATASETS[key]
-    path = meta["path"]
+    path = Path(data_dir).joinpath(*meta["relative_path"])
     if not path.exists():
         raise FileNotFoundError(f"Dataset not found: {path}")
 
@@ -96,5 +99,5 @@ def load_dataset(key: str) -> DatasetBundle:
     )
 
 
-def list_datasets() -> List[str]:
+def list_datasets() -> list[str]:
     return list(DATASETS.keys())

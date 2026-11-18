@@ -13,12 +13,11 @@ Produces:
 """
 from __future__ import annotations
 
-import io
 import tempfile
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 
@@ -37,9 +36,9 @@ class AudioQuality:
     rms: float
     snr_db_proxy: float
     voiced_fraction: float
-    messages: List[str] = field(default_factory=list)
+    messages: list[str] = field(default_factory=list)
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "ok": self.ok,
             "duration_sec": self.duration_sec,
@@ -53,18 +52,17 @@ class AudioQuality:
 @dataclass
 class ExtractionResult:
     quality: AudioQuality
-    common: Dict[str, float]
-    uci: Dict[str, float]
-    bensparx: Dict[str, float]
-    common_feature_names: List[str]
-    uci_feature_names: List[str]
-    bensparx_feature_names: List[str]
-    meta: Dict[str, Any] = field(default_factory=dict)
+    common: dict[str, float]
+    uci: dict[str, float]
+    bensparx: dict[str, float]
+    common_feature_names: list[str]
+    uci_feature_names: list[str]
+    bensparx_feature_names: list[str]
+    meta: dict[str, Any] = field(default_factory=dict)
 
 
-def _load_audio(source: Union[str, Path, bytes, bytearray], sr: int = TARGET_SR) -> Tuple[np.ndarray, int]:
+def _load_audio(source: str | Path | bytes | bytearray, sr: int = TARGET_SR) -> tuple[np.ndarray, int]:
     import librosa
-    import soundfile as sf
 
     if isinstance(source, (bytes, bytearray)):
         # Write temp file for robust decoding (webm/wav/ogg from browser)
@@ -81,7 +79,7 @@ def _load_audio(source: Union[str, Path, bytes, bytearray], sr: int = TARGET_SR)
             tmp.write(data)
             path = tmp.name
         try:
-            y, file_sr = librosa.load(path, sr=sr, mono=True)
+            y, _file_sr = librosa.load(path, sr=sr, mono=True)
         finally:
             Path(path).unlink(missing_ok=True)
         return y.astype(np.float32), sr
@@ -121,7 +119,7 @@ def _snr_proxy(y: np.ndarray) -> float:
     return float(10.0 * np.log10(sig / noi))
 
 
-def _praat_voice_report(y: np.ndarray, sr: int) -> Dict[str, float]:
+def _praat_voice_report(y: np.ndarray, sr: int) -> dict[str, float]:
     """Extract Praat-style dysphonia measures via parselmouth."""
     import parselmouth
     from parselmouth.praat import call
@@ -140,7 +138,7 @@ def _praat_voice_report(y: np.ndarray, sr: int) -> Dict[str, float]:
             if np.isnan(v) or np.isinf(v):
                 return default
             return v
-        except Exception:
+        except Exception:  # noqa: BLE001
             return default
 
     f0_mean = safe_call(pitch, "Get mean", 0, 0, "Hertz", default=np.nan)
@@ -195,12 +193,7 @@ def _praat_voice_report(y: np.ndarray, sr: int) -> Dict[str, float]:
             f0_values.append(float(v))
     voiced_fraction = voiced / max(n_frames, 1)
 
-    # Autocorrelation harmonicity proxy
-    try:
-        ac = float(call(snd, "Get absolute extremum", 0, 0, "None"))  # not ideal
-    except Exception:
-        ac = np.nan
-    # Better: mean of harmonicity object already is HNR-like
+    # Mean harmonicity is the autocorrelation harmonicity proxy.
     mean_autocorr_harm = hnr
 
     # PPE approximation from F0 contour (pitch period entropy proxy)
@@ -309,7 +302,7 @@ def _dfa_proxy(y: np.ndarray, box: int = 64) -> float:
     return float(slope)
 
 
-def _spread_proxies(f0: np.ndarray) -> Tuple[float, float]:
+def _spread_proxies(f0: np.ndarray) -> tuple[float, float]:
     f0 = f0[np.isfinite(f0) & (f0 > 0)]
     if f0.size < 5:
         return np.nan, np.nan
@@ -340,10 +333,10 @@ def _d2_proxy(f0: np.ndarray) -> float:
     return float(dsum / max(c, 1))
 
 
-def _librosa_features(y: np.ndarray, sr: int) -> Dict[str, float]:
+def _librosa_features(y: np.ndarray, sr: int) -> dict[str, float]:
     import librosa
 
-    out: Dict[str, float] = {}
+    out: dict[str, float] = {}
     # MFCCs 1-12 (skip 0th for relative stability, but also keep 0 as energy-ish)
     mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
     mfcc_mean = mfcc.mean(axis=1)
@@ -417,7 +410,7 @@ def assess_quality(y: np.ndarray, sr: int, voiced_fraction: float) -> AudioQuali
 
 
 def extract_features(
-    source: Union[str, Path, bytes, bytearray],
+    source: str | Path | bytes | bytearray,
     max_seconds: float = 12.0,
 ) -> ExtractionResult:
     """Full extraction pipeline from file path or raw bytes.
@@ -433,7 +426,7 @@ def extract_features(
     quality = assess_quality(y, sr, float(praat.get("voiced_fraction", 0.0)))
 
     # --- Common audio feature set (used to train Italian live model) ---
-    common: Dict[str, float] = {}
+    common: dict[str, float] = {}
     for k, v in praat.items():
         if k == "voiced_fraction":
             continue
@@ -509,7 +502,7 @@ def extract_features(
     bensparx["std_delta_delta_log_energy"] = libf.get("std_delta_delta_log_energy", np.nan)
 
     # sanitize all to float
-    def _clean(d: Dict[str, float]) -> Dict[str, float]:
+    def _clean(d: dict[str, float]) -> dict[str, float]:
         return {k: (float(v) if v is not None and np.isfinite(float(v)) else np.nan) for k, v in d.items()}
 
     common = _clean(common)
@@ -524,15 +517,15 @@ def extract_features(
         common_feature_names=sorted(common.keys()),
         uci_feature_names=list(uci.keys()),
         bensparx_feature_names=list(bensparx.keys()),
-        meta={"sr": sr, "n_samples": int(len(y))},
+        meta={"sr": sr, "n_samples": len(y)},
     )
 
 
 def vectorize(
-    feat_dict: Dict[str, float],
-    feature_names: List[str],
-    fill_values: Optional[Dict[str, float]] = None,
-) -> Tuple[np.ndarray, List[str], float]:
+    feat_dict: dict[str, float],
+    feature_names: list[str],
+    fill_values: dict[str, float] | None = None,
+) -> tuple[np.ndarray, list[str], float]:
     """
     Build ordered vector. Missing features filled from fill_values (training medians).
     Returns vector, list of imputed feature names, completeness ratio.

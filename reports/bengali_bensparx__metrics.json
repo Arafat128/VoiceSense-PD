@@ -14,7 +14,7 @@
     "test_samples": 177,
     "train_subjects": 96,
     "test_subjects": 24,
-    "method": "GroupShuffleSplit 80/20 (subject/speaker aware)",
+    "method": "subject-balanced group holdout 80/20",
     "random_state": 42
   },
   "models": {

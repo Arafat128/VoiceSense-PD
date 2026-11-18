@@ -8,7 +8,7 @@
   },
   "n_features": 33,
   "split": {
-    "method": "subject-stratified Group holdout 80/20",
+    "method": "subject-balanced group holdout 80/20",
     "train_samples": 152,
     "test_samples": 34,
     "train_subjects": 49,

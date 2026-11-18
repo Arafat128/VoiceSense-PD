@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Tuple
+from datetime import UTC, datetime
+from typing import Any
 
 from .config import DISCLAIMER
 
@@ -22,10 +22,10 @@ AUDIO_SESSION_KEYS = (
 
 
 def utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    return datetime.now(UTC).replace(microsecond=0).isoformat()
 
 
-def is_local_runtime() -> Tuple[bool, str]:
+def is_local_runtime() -> tuple[bool, str]:
     """
     Best-effort local vs hosted detection.
 
@@ -49,7 +49,7 @@ def is_local_runtime() -> Tuple[bool, str]:
 
         if hasattr(st, "context") and getattr(st.context, "headers", None):
             host = (st.context.headers.get("host") or "").lower()
-    except Exception:
+    except Exception:  # noqa: BLE001
         host = ""
 
     if any(token in host for token in ("streamlit.app", "share.streamlit.io", "streamlitusercontent")):
@@ -73,7 +73,7 @@ def bump_audio_nonce(session_state: Any) -> int:
     return next_nonce
 
 
-def redact_source_kind(source_kind: Optional[str]) -> str:
+def redact_source_kind(source_kind: str | None) -> str:
     if not source_kind:
         return "unknown"
     if source_kind.startswith("upload"):
@@ -98,7 +98,7 @@ def _json_safe(value: Any) -> Any:
         return str(value)
 
 
-def _plain_for_receipt(plain: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+def _plain_for_receipt(plain: dict[str, Any] | None) -> dict[str, Any] | None:
     """Keep only the everyday sentences. Never the raw feature table."""
     if not plain:
         return None
@@ -117,12 +117,12 @@ def _plain_for_receipt(plain: Optional[Dict[str, Any]]) -> Optional[Dict[str, An
 
 
 def make_screening_receipt(
-    result: Dict[str, Any],
+    result: dict[str, Any],
     *,
-    source_kind: Optional[str] = None,
+    source_kind: str | None = None,
     include_features: bool = False,
     local_runtime: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Build an exportable screening record that cannot contain audio bytes."""
     primary = dict(result.get("primary") or {})
     explanation = dict(primary.get("explanation") or {})
@@ -187,11 +187,11 @@ def make_screening_receipt(
     return _json_safe(receipt)
 
 
-def receipt_json(receipt: Dict[str, Any]) -> str:
+def receipt_json(receipt: dict[str, Any]) -> str:
     return json.dumps(receipt, indent=2, sort_keys=False)
 
 
-def assert_receipt_has_no_audio(receipt: Dict[str, Any]) -> None:
+def assert_receipt_has_no_audio(receipt: dict[str, Any]) -> None:
     blob = json.dumps(receipt)
     if "RIFF" in blob or "last_audio_raw" in blob:
         raise ValueError("Receipt appears to contain audio material")
