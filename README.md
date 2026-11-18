@@ -42,7 +42,7 @@ Local Streamlit is the supported privacy mode:
 
 **Streamlit Community Cloud is not on-device.** The browser must upload audio to the host. The app shows a warning in that case.
 
-Primus identity proofs are not in this repository. That app is [voicesense-primus](https://github.com/Arafat128/voicesense-primus).
+Identity proofs are not part of this repository.
 
 ## IDM popup (Error 0x80080005)
 
@@ -66,10 +66,9 @@ Analysis converts audio **in memory** to WAV and does not need a file download.
 
 Open these in order if you are new to the code:
 
-1. `docs/VoiceSense-app-flows.pdf` — every click, what runs, and which file owns it
-2. `app/streamlit_app.py` — the website frame (it does not score audio)
-3. `app/live_page.py` — record, upload, analyze
-4. `src/__init__.py` — map of the engine, one line per file
+1. `app/streamlit_app.py` — the website frame (it does not score audio)
+2. `app/live_page.py` — record, upload, analyze
+3. `src/__init__.py` — map of the engine, one line per file
 
 ## Project layout
 
@@ -83,8 +82,6 @@ src/                   # scoring, training, privacy (see src/__init__.py)
 models/                # trained files; do not edit by hand
 reports/               # metrics written by training
 scripts/               # small checks
-landing/               # marketing page only; no model runs here
-docs/                  # VoiceSense-app-flows.pdf
 ```
 
 ## Deploy notes
@@ -93,7 +90,7 @@ docs/                  # VoiceSense-app-flows.pdf
 |--------|--------|
 | **Local Streamlit** | Full app (recommended) |
 | **Streamlit Community Cloud** | Possible if system audio libs available |
-| **Vercel** | Landing page only — ML stack is not serverless-friendly |
+| **Vercel** | Not used — the ML stack is not serverless-friendly |
 
 ## Citation / data
 

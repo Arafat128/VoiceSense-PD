@@ -1,5 +1,4 @@
-.env
-.env.*
+.env*
 !.env.example
 __pycache__/
 *.pyc
@@ -7,3 +6,4 @@ __pycache__/
 venv/
 *.egg-info/
 .streamlit/secrets.toml
+models/italian_common_features_cache.csv

@@ -21,5 +21,4 @@ Privacy
     privacy.py          drop audio from memory, and build a receipt that has no WAV
 
 The website that calls this package is app/streamlit_app.py.
-The click-by-click guide is docs/VoiceSense-app-flows.pdf.
 """

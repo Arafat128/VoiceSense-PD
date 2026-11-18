@@ -1,8 +1,4 @@
-"""On-device privacy banner and a receipt that contains no recording.
-
-This Parkinson’s app does not include Primus. The Primus build is the
-separate voicesense-primus repository.
-"""
+"""On-device privacy banner and a receipt that contains no recording."""
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
@@ -87,7 +83,6 @@ def render_privacy_tab() -> None:
           </p>
           <p class="vs-muted">
             Identity proofs are not part of this repository.
-            That build is <b>voicesense-primus</b>.
           </p>
         </div>
         """,

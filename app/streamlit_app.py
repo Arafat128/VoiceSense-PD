@@ -8,7 +8,6 @@ This file does not score a voice. It draws the frame and opens one screen:
   the About block below  how the method is limited
 
 The engine map is the docstring in src/__init__.py.
-A readable walkthrough of every click is docs/VoiceSense-app-flows.pdf.
 """
 from __future__ import annotations
 
@@ -113,13 +112,12 @@ elif page == "About & method":
           <p class="vs-muted">
             Live screening is designed to run on your machine. Successful analysis
             discards the recording. The receipt download does not include the WAV.
-            Identity proofs live in the separate voicesense-primus repository.
+            Identity proofs are not part of this repository.
           </p>
           <h3>Where the code lives</h3>
           <p class="vs-muted">
             Screens: <code>app/live_page.py</code>, <code>app/feature_page.py</code>, <code>app/privacy_ui.py</code>.
             Engine map: <code>src/__init__.py</code>.
-            Click-by-click guide: <code>docs/VoiceSense-app-flows.pdf</code>.
           </p>
           <h3>Disclaimer</h3>
           <p class="vs-muted">Research screening support only. Not a clinical diagnostic device.</p>
