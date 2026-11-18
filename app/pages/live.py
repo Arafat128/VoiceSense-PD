@@ -83,6 +83,12 @@ def live_page() -> None:
             horizontal=True,
             key="lang_mode",
         )
+        if lang == "bangla":
+            st.caption(
+                "Bangla mode uses the same vowel model. There is no Bengali audio model: the public "
+                "BenSParX table matches rescaled rows of a Turkish UCI dataset, and recordings rebuilt "
+                "into its columns scored at chance (AUC 0.50). The BenSParX model is in Feature lab."
+            )
 
         # IMPORTANT: optional preview only — auto audio widgets often trigger IDM popups
         preview = st.checkbox(

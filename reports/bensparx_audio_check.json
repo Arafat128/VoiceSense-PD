@@ -1,0 +1,211 @@
+{
+  "clips_scored": 679,
+  "clips_failed": 0,
+  "recipe": "Research check, not shipped in the app. The public BenSParX columns hold the\nUCI pd_speech_features values (Sakar et al. 2019) times a per-row constant,\nseveral under other names (training/bensparx_provenance.py). This module\nrebuilds as much of that row as Praat and librosa allow:",
+  "share_inside_bensparx_1_99_range": {
+    "measured": {
+      "mean": 0.842,
+      "per_column": {
+        "numPulses": 0.143,
+        "numPeriodsPulses": 0.143,
+        "meanPeriodPulses": 0.99,
+        "stdDevPeriodPulses": 0.991,
+        "locPctJitter": 0.931,
+        "locAbsJitter": 0.953,
+        "rapJitter": 0.865,
+        "ppq5Jitter": 0.938,
+        "ddpJitter": 0.865,
+        "locShimmer": 0.943,
+        "locDbShimmer": 0.948,
+        "apq3Shimmer": 0.897,
+        "apq5Shimmer": 0.91,
+        "apq11Shimmer": 0.931,
+        "ddaShimmer": 0.898,
+        "AutoCorrHarmonicity": 0.999,
+        "meanAutoCorrHarmonicity": 0.951,
+        "NHR": 0.863
+      }
+    },
+    "not_reproducible": {
+      "mean": 1.0,
+      "per_column": {
+        "maxPitch": 1.0,
+        "HNR": 1.0,
+        "meanPitch": 1.0
+      }
+    },
+    "approximated": {
+      "mean": 0.815,
+      "per_column": {
+        "minIntensity": 0.262,
+        "maxIntensity": 0.873,
+        "meanIntensity": 0.918,
+        "f1": 0.891,
+        "f2": 0.658,
+        "f3": 0.946,
+        "f4": 0.891,
+        "mean_Log_energy": 0.518,
+        "Delta_MFCC_0": 0.0,
+        "Delta_MFCC_1": 0.938,
+        "Delta_MFCC_2": 0.991,
+        "Delta_MFCC_3": 1.0,
+        "Delta_MFCC_4": 1.0,
+        "Delta_MFCC_5": 1.0,
+        "Delta_MFCC_6": 0.935,
+        "Delta_MFCC_7": 1.0,
+        "Delta_MFCC_8": 1.0,
+        "Delta_MFCC_9": 1.0,
+        "Delta_MFCC_10": 1.0,
+        "Delta_MFCC_11": 1.0,
+        "Delta_MFCC_12": 1.0,
+        "DeltaDelta_MFCC_0": 0.772,
+        "DeltaDelta_MFCC_1": 0.87,
+        "DeltaDelta_MFCC_2": 0.848,
+        "DeltaDelta_MFCC_3": 0.803,
+        "DeltaDelta_MFCC_4": 0.748,
+        "DeltaDelta_MFCC_5": 0.676,
+        "DeltaDelta_MFCC_6": 0.608,
+        "DeltaDelta_MFCC_7": 0.8,
+        "DeltaDelta_MFCC_8": 0.616,
+        "DeltaDelta_MFCC_9": 0.601,
+        "DeltaDelta_MFCC_10": 0.53,
+        "DeltaDelta_MFCC_11": 0.487,
+        "DeltaDelta_MFCC_12": 0.526,
+        "std_Log_energy": 0.563,
+        "std_delta_log_energy": 0.872,
+        "std_delta_delta_log_energy": 0.763,
+        "MFCC_0": 0.0,
+        "MFCC_1": 0.938,
+        "MFCC_2": 0.991,
+        "MFCC_3": 1.0,
+        "MFCC_4": 1.0,
+        "MFCC_5": 1.0,
+        "MFCC_6": 0.935,
+        "MFCC_7": 1.0,
+        "MFCC_8": 1.0,
+        "MFCC_9": 1.0,
+        "MFCC_10": 1.0,
+        "MFCC_11": 1.0,
+        "MFCC_12": 1.0
+      }
+    }
+  },
+  "median_ratio_rebuilt_to_bensparx": {
+    "numPulses": 3.137,
+    "numPeriodsPulses": 3.144,
+    "meanPeriodPulses": 1.074,
+    "stdDevPeriodPulses": 2.73,
+    "locPctJitter": 3.046,
+    "locAbsJitter": 3.288,
+    "rapJitter": 8.723,
+    "ppq5Jitter": 3.904,
+    "ddpJitter": 8.737,
+    "locShimmer": 0.606,
+    "locDbShimmer": 0.637,
+    "apq3Shimmer": 0.575,
+    "apq5Shimmer": 0.57,
+    "apq11Shimmer": 0.644,
+    "ddaShimmer": 0.574,
+    "AutoCorrHarmonicity": 1.008,
+    "meanAutoCorrHarmonicity": 0.805,
+    "NHR": 1.13,
+    "minIntensity": 0.261,
+    "maxIntensity": 0.931,
+    "meanIntensity": 0.882,
+    "f1": 0.86,
+    "f2": 1.096,
+    "f3": 1.08,
+    "f4": 1.084,
+    "maxPitch": 0.98,
+    "HNR": 1.0,
+    "meanPitch": 0.998,
+    "mean_Log_energy": 0.852,
+    "Delta_MFCC_0": -0.67,
+    "Delta_MFCC_1": 0.578,
+    "Delta_MFCC_2": 0.399,
+    "Delta_MFCC_3": -0.433,
+    "Delta_MFCC_4": 0.446,
+    "Delta_MFCC_5": 0.302,
+    "Delta_MFCC_6": 0.016,
+    "Delta_MFCC_7": -3.907,
+    "Delta_MFCC_8": -0.704,
+    "Delta_MFCC_9": -3.107,
+    "Delta_MFCC_10": 0.238,
+    "Delta_MFCC_11": 0.409,
+    "Delta_MFCC_12": 1.501,
+    "DeltaDelta_MFCC_0": 2.63,
+    "DeltaDelta_MFCC_1": 1.076,
+    "DeltaDelta_MFCC_2": 0.81,
+    "DeltaDelta_MFCC_3": 0.766,
+    "DeltaDelta_MFCC_4": 0.766,
+    "DeltaDelta_MFCC_5": 0.7,
+    "DeltaDelta_MFCC_6": 0.625,
+    "DeltaDelta_MFCC_7": 0.664,
+    "DeltaDelta_MFCC_8": 0.667,
+    "DeltaDelta_MFCC_9": 0.602,
+    "DeltaDelta_MFCC_10": 0.589,
+    "DeltaDelta_MFCC_11": 0.625,
+    "DeltaDelta_MFCC_12": 0.614,
+    "std_Log_energy": 4.853,
+    "std_delta_log_energy": 2.256,
+    "std_delta_delta_log_energy": 2.326,
+    "MFCC_0": -0.67,
+    "MFCC_1": 0.578,
+    "MFCC_2": 0.399,
+    "MFCC_3": -0.433,
+    "MFCC_4": 0.446,
+    "MFCC_5": 0.302,
+    "MFCC_6": 0.016,
+    "MFCC_7": -3.907,
+    "MFCC_8": -0.704,
+    "MFCC_9": -3.107,
+    "MFCC_10": 0.238,
+    "MFCC_11": 0.409,
+    "MFCC_12": 1.501
+  },
+  "auc_all": {
+    "value": 0.5018,
+    "ci95": [
+      0.4297,
+      0.5831
+    ]
+  },
+  "auc_by_dataset": {
+    "argentina": {
+      "value": 0.6819,
+      "ci95": [
+        0.5889,
+        0.7808
+      ]
+    },
+    "italian": {
+      "value": 0.2382,
+      "ci95": [
+        0.1054,
+        0.3922
+      ]
+    },
+    "uams": {
+      "value": 0.5208,
+      "ci95": [
+        0.347,
+        0.7055
+      ]
+    }
+  },
+  "band_shares": {
+    "pd_clips": {
+      "uncertain": 0.892,
+      "pd": 0.062,
+      "hc": 0.046
+    },
+    "healthy_clips": {
+      "uncertain": 0.887,
+      "pd": 0.094,
+      "hc": 0.019
+    }
+  },
+  "mean_prob": 0.773,
+  "ship_in_ui": false,
+  "verdict": "Rebuilt rows: 84% of Praat-measured values and 82% of approximated values fall inside the BenSParX 1-99% range; 3 columns cannot be reproduced. Scored by the BenSParX model, labelled vowel recordings give person AUC 0.50 (0.43-0.58). Not close enough to ship: the audio-to-BenSParX path stays out of the app."
+}

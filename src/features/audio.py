@@ -8,8 +8,7 @@ Uses:
 Produces:
 1) common_audio feature vector (for the dedicated live-audio model trained on Italian WAVs)
 2) UCI-like feature vector (for English UCI model when mapping is complete enough)
-3) BenSParX-like feature vector (for Bengali model when mapping is complete enough)
-4) quality report (duration, SNR proxy, voiced fraction) — reject bad takes
+3) quality report (duration, SNR proxy, voiced fraction) — reject bad takes
 """
 from __future__ import annotations
 
@@ -54,10 +53,8 @@ class ExtractionResult:
     quality: AudioQuality
     common: dict[str, float]
     uci: dict[str, float]
-    bensparx: dict[str, float]
     common_feature_names: list[str]
     uci_feature_names: list[str]
-    bensparx_feature_names: list[str]
     meta: dict[str, Any] = field(default_factory=dict)
 
 
@@ -466,57 +463,19 @@ def extract_features(
         "PPE": praat["ppe"],
     }
 
-    # --- BenSParX-like mapping ---
-    bensparx = {
-        "numPulses": praat["n_pulses"],
-        "numPeriodsPulses": praat["n_periods"],
-        "meanPeriodPulses": praat["mean_period"],
-        "stdDevPeriodPulses": praat["std_period"],
-        "locPctJitter": praat["local_jitter"],
-        "locAbsJitter": praat["local_abs_jitter"],
-        "rapJitter": praat["rap_jitter"],
-        "ppq5Jitter": praat["ppq5_jitter"],
-        "ddpJitter": praat["ddp_jitter"],
-        "locShimmer": praat["local_shimmer"],
-        "locDbShimmer": praat["local_db_shimmer"],
-        "apq3Shimmer": praat["apq3"],
-        "apq5Shimmer": praat["apq5"],
-        "apq11Shimmer": praat["apq11"],
-        "ddaShimmer": praat["dda"],
-        "AutoCorrHarmonicity": praat["mean_autocorr_harmonicity"],
-        "meanAutoCorrHarmonicity": praat["mean_autocorr_harmonicity"],
-        "NHR": praat["nhr"],
-        "minIntensity": praat["min_intensity"],
-        "maxIntensity": praat["max_intensity"],
-        "meanIntensity": praat["mean_intensity"],
-        "meanPitch": praat["f0_mean"],
-        "minPitch": praat["f0_min"],
-        "maxPitch": praat["f0_max"],
-    }
-    for i in range(1, 13):
-        bensparx[f"MFCC_{i}"] = libf.get(f"MFCC_{i}", np.nan)
-    # extra energy deltas often present in BenSParX-style sets
-    bensparx["mean_delta_log_energy"] = libf.get("mean_delta_log_energy", np.nan)
-    bensparx["std_delta_log_energy"] = libf.get("std_delta_log_energy", np.nan)
-    bensparx["mean_delta_delta_log_energy"] = libf.get("mean_delta_delta_log_energy", np.nan)
-    bensparx["std_delta_delta_log_energy"] = libf.get("std_delta_delta_log_energy", np.nan)
-
     # sanitize all to float
     def _clean(d: dict[str, float]) -> dict[str, float]:
         return {k: (float(v) if v is not None and np.isfinite(float(v)) else np.nan) for k, v in d.items()}
 
     common = _clean(common)
     uci = _clean(uci)
-    bensparx = _clean(bensparx)
 
     return ExtractionResult(
         quality=quality,
         common=common,
         uci=uci,
-        bensparx=bensparx,
         common_feature_names=sorted(common.keys()),
         uci_feature_names=list(uci.keys()),
-        bensparx_feature_names=list(bensparx.keys()),
         meta={"sr": sr, "n_samples": len(y)},
     )
 
