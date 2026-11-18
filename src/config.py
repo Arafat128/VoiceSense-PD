@@ -34,6 +34,38 @@ TEST_SIZE = 0.2
 # Public Italian Parkinson's Voice layout under VOICESENSE_DATA_DIR / --data-dir.
 ITALIAN_RELATIVE_PATH = ("07_Italian_PD_Voice", "italian_parkinson")
 
+# Sustained-vowel corpora used by the live model. Paths are relative to the
+# dataset root. All three are public downloads (CC BY 4.0) with no access request.
+VOWEL_DATASETS = {
+    "italian": {
+        "relative_path": ITALIAN_RELATIVE_PATH,
+        "display_name": "Italian Parkinson's Voice and Speech (Dimauro et al.), vowels /a e i o u/",
+        "language": "Italian",
+        "channel": "studio microphone",
+        "license": "CC BY 4.0",
+        "source": "https://doi.org/10.21227/aw6b-tg17",
+    },
+    "uams": {
+        "relative_path": ("09_UAMS_Iyer_figshare",),
+        "display_name": "UAMS voice samples (Iyer, Prior et al.), phone /a/",
+        "language": "English (US)",
+        "channel": "telephone voicemail, 8 kHz",
+        "license": "CC BY 4.0",
+        "source": "https://doi.org/10.6084/m9.figshare.23849127",
+    },
+    "argentina": {
+        "relative_path": ("10_Argentina_vowelA_figshare",),
+        "display_name": "Audios_vowel_A_PD (Giuliano et al.), Argentine Spanish /a/",
+        "language": "Spanish (Argentina)",
+        "channel": "microphone, 44.1 kHz",
+        "license": "CC BY 4.0",
+        "source": "https://doi.org/10.6084/m9.figshare.21453867",
+    },
+}
+
+# Feature cache for offline training. Derived from dataset audio, never committed.
+CACHE_DIR = ROOT / ".cache"
+
 # Clinical disclaimer shown in app and reports
 DISCLAIMER = (
     "This tool is a research screening support system only. "

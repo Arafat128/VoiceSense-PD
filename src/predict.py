@@ -12,7 +12,7 @@ import pandas as pd
 
 from .config import DISCLAIMER
 from .explain import explain_prediction
-from .features.audio import extract_features, vectorize
+from .features.audio import add_engineered, extract_features, vectorize
 from .models.registry import load_live_audio_model, load_model
 
 
@@ -68,26 +68,8 @@ def predict_from_features(
 
 
 def _add_engineered(feat_dict: dict[str, float]) -> dict[str, float]:
-    """Same engineered clinical features as training."""
-    out = dict(feat_dict)
-    eps = 1e-9
-    f0m = out.get("praat_f0_mean")
-    f0s = out.get("praat_f0_std")
-    f0hi = out.get("praat_f0_max")
-    f0lo = out.get("praat_f0_min")
-    imx = out.get("praat_max_intensity")
-    imn = out.get("praat_min_intensity")
-    jit = out.get("praat_local_jitter")
-    shi = out.get("praat_local_shimmer")
-    if f0m is not None and f0s is not None and np.isfinite(f0m) and np.isfinite(f0s):
-        out["f0_cv"] = float(f0s) / (abs(float(f0m)) + eps)
-    if f0hi is not None and f0lo is not None and np.isfinite(f0hi) and np.isfinite(f0lo):
-        out["f0_range"] = float(f0hi) - float(f0lo)
-    if imx is not None and imn is not None and np.isfinite(imx) and np.isfinite(imn):
-        out["intensity_range"] = float(imx) - float(imn)
-    if jit is not None and shi is not None and np.isfinite(jit) and np.isfinite(shi):
-        out["jitter_shimmer_product"] = float(jit) * float(shi)
-    return out
+    """Same engineered clinical features as training (shared definition)."""
+    return add_engineered(feat_dict)
 
 
 def _decide_from_proba(proba: float, thresholds: dict[str, float]) -> dict[str, Any]:

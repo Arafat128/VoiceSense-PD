@@ -545,3 +545,25 @@ def vectorize(
             present += 1
     completeness = present / max(len(feature_names), 1)
     return np.array(vec, dtype=float), imputed, completeness
+
+
+ENGINEERED_FEATURES = ("f0_cv", "f0_range", "intensity_range", "jitter_shimmer_product")
+
+
+def add_engineered(feat_dict: dict[str, float]) -> dict[str, float]:
+    """Ratio features shared by training and scoring (one definition only)."""
+    out = dict(feat_dict)
+    eps = 1e-9
+
+    def _ok(*names: str) -> bool:
+        return all(out.get(n) is not None and np.isfinite(out.get(n)) for n in names)
+
+    if _ok("praat_f0_mean", "praat_f0_std"):
+        out["f0_cv"] = float(out["praat_f0_std"]) / (abs(float(out["praat_f0_mean"])) + eps)
+    if _ok("praat_f0_max", "praat_f0_min"):
+        out["f0_range"] = float(out["praat_f0_max"]) - float(out["praat_f0_min"])
+    if _ok("praat_max_intensity", "praat_min_intensity"):
+        out["intensity_range"] = float(out["praat_max_intensity"]) - float(out["praat_min_intensity"])
+    if _ok("praat_local_jitter", "praat_local_shimmer"):
+        out["jitter_shimmer_product"] = float(out["praat_local_jitter"]) * float(out["praat_local_shimmer"])
+    return out

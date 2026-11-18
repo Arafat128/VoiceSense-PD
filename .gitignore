@@ -7,3 +7,4 @@ venv/
 *.egg-info/
 .streamlit/secrets.toml
 models/italian_common_features_cache.csv
+.cache/
