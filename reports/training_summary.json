@@ -55,57 +55,120 @@
     }
   },
   "bengali_bensparx": {
-    "display_name": "BenSParX (Bengali)",
+    "display_name": "BenSParX (Bengali, public CSV)",
     "best_model": "random_forest",
     "app_default_model": "random_forest",
     "split": {
-      "train_samples": 723,
-      "test_samples": 177,
-      "train_subjects": 96,
-      "test_subjects": 24,
-      "method": "subject-balanced group holdout 80/20",
-      "random_state": 42
+      "method": "80/20 holdout grouped by UCI subject; shipped models train on the 80%",
+      "train_samples": 725,
+      "test_samples": 175,
+      "train_subjects": 200,
+      "test_subjects": 50
     },
     "models": {
       "random_forest": {
-        "accuracy": 0.9378531073446328,
-        "precision": 0.9534883720930233,
-        "recall": 0.9213483146067416,
-        "f1": 0.9371428571428572,
-        "confusion_matrix": [
-          [
-            84,
-            4
-          ],
-          [
-            7,
-            82
-          ]
+        "protocol": "person-grouped stratified 5-fold CV, repeated 5x, persons = uci_subject; 95% CI = 1000x person bootstrap",
+        "clip_auc": 0.8619,
+        "clip_auc_ci95": [
+          0.8089,
+          0.9081
         ],
-        "roc_auc": 0.9866573033707865,
-        "cv_f1_mean": 0.9305267038834728,
-        "cv_f1_std": 0.02518959899785019,
-        "classification_report": "              precision    recall  f1-score   support\n\n          HC     0.9231    0.9545    0.9385        88\n          PD     0.9535    0.9213    0.9371        89\n\n    accuracy                         0.9379       177\n   macro avg     0.9383    0.9379    0.9378       177\nweighted avg     0.9384    0.9379    0.9378       177\n"
+        "clip_balanced_accuracy": 0.7256,
+        "clip_balanced_accuracy_ci95": [
+          0.6697,
+          0.7824
+        ],
+        "clip_sensitivity": 0.9444,
+        "clip_sensitivity_ci95": [
+          0.9131,
+          0.9703
+        ],
+        "clip_specificity": 0.5067,
+        "clip_specificity_ci95": [
+          0.3967,
+          0.6132
+        ],
+        "clip_n": 900,
+        "person_auc": 0.8799,
+        "person_auc_ci95": [
+          0.8325,
+          0.9237
+        ],
+        "person_balanced_accuracy": 0.7312,
+        "person_balanced_accuracy_ci95": [
+          0.6655,
+          0.7915
+        ],
+        "person_sensitivity": 0.9624,
+        "person_sensitivity_ci95": [
+          0.9318,
+          0.989
+        ],
+        "person_specificity": 0.5,
+        "person_specificity_ci95": [
+          0.3714,
+          0.6182
+        ],
+        "person_n": 250,
+        "holdout_auc": 0.8222,
+        "holdout_balanced_accuracy": 0.7105,
+        "speaker_id_grouping_person_auc": 1.0,
+        "speaker_id_grouping_person_auc_ci95": [
+          1.0,
+          1.0
+        ]
       },
       "svm_rbf": {
-        "accuracy": 0.9322033898305084,
-        "precision": 0.963855421686747,
-        "recall": 0.898876404494382,
-        "f1": 0.9302325581395349,
-        "confusion_matrix": [
-          [
-            85,
-            3
-          ],
-          [
-            9,
-            80
-          ]
+        "protocol": "person-grouped stratified 5-fold CV, repeated 5x, persons = uci_subject; 95% CI = 1000x person bootstrap",
+        "clip_auc": 0.7788,
+        "clip_auc_ci95": [
+          0.7019,
+          0.85
         ],
-        "roc_auc": 0.9666751787538305,
-        "cv_f1_mean": 0.9321339244623209,
-        "cv_f1_std": 0.020095131038323343,
-        "classification_report": "              precision    recall  f1-score   support\n\n          HC     0.9043    0.9659    0.9341        88\n          PD     0.9639    0.8989    0.9302        89\n\n    accuracy                         0.9322       177\n   macro avg     0.9341    0.9324    0.9321       177\nweighted avg     0.9342    0.9322    0.9321       177\n"
+        "clip_balanced_accuracy": 0.63,
+        "clip_balanced_accuracy_ci95": [
+          0.5824,
+          0.6826
+        ],
+        "clip_sensitivity": 0.9578,
+        "clip_sensitivity_ci95": [
+          0.9292,
+          0.9801
+        ],
+        "clip_specificity": 0.3022,
+        "clip_specificity_ci95": [
+          0.2068,
+          0.4043
+        ],
+        "clip_n": 900,
+        "person_auc": 0.7866,
+        "person_auc_ci95": [
+          0.7124,
+          0.8544
+        ],
+        "person_balanced_accuracy": 0.6272,
+        "person_balanced_accuracy_ci95": [
+          0.5725,
+          0.6842
+        ],
+        "person_sensitivity": 0.9731,
+        "person_sensitivity_ci95": [
+          0.9444,
+          0.9946
+        ],
+        "person_specificity": 0.2812,
+        "person_specificity_ci95": [
+          0.1719,
+          0.3929
+        ],
+        "person_n": 250,
+        "holdout_auc": 0.815,
+        "holdout_balanced_accuracy": 0.6866,
+        "speaker_id_grouping_person_auc": 0.9978,
+        "speaker_id_grouping_person_auc_ci95": [
+          0.9908,
+          1.0
+        ]
       }
     }
   }

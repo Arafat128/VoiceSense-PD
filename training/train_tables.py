@@ -1,5 +1,7 @@
 """
-Train PD screening models on English (UCI) and Bengali (BenSParX).
+Train the English (UCI parkinsons.data) feature-table model.
+
+BenSParX (Bengali) is trained by training/train_bangla.py with person-grouped CV.
 
 Correct methodology:
 - Subject/speaker-group aware train/test split (no person leakage)
@@ -279,10 +281,16 @@ def train_all(data_dir: Path | None = None) -> dict[str, Any]:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     summary = {}
     for key in list_datasets():
+        if key == "bengali_bensparx":
+            # BenSParX rows copy UCI subjects across speaker ids, so a speaker-grouped
+            # holdout leaks people. It is trained with person-grouped CV instead.
+            print("BenSParX: run `python -m training.train_bangla` (person-grouped CV).")
+            continue
         summary[key] = train_one(key, root)
     summary_path = REPORTS_DIR / "training_summary.json"
+    previous = json.loads(summary_path.read_text(encoding="utf-8")) if summary_path.exists() else {}
     # store compact summary
-    compact = {
+    compact = {k: v for k, v in previous.items() if k not in summary} | {
         k: {
             "display_name": v["display_name"],
             "best_model": v["best_model"],

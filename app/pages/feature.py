@@ -143,6 +143,8 @@ def feature_page() -> None:
 
             if out["pred_label"] == 1:
                 st.error(f"### {out['prediction']}")
+            elif out["pred_label"] == -1:
+                st.info(f"### {out['prediction']}")
             else:
                 st.success(f"### {out['prediction']}")
             render_everyday(build_feature_plain(out))
@@ -153,7 +155,10 @@ def feature_page() -> None:
             meta = st.session_state.get("last_feat_meta") or {}
             if meta.get("true_label") is not None:
                 true = "PD" if meta["true_label"] == 1 else "HC"
-                match = meta["true_label"] == out["pred_label"]
-                st.write(f"Hold-out true **{true}** · match **{'Yes' if match else 'No'}**")
+                if out["pred_label"] == -1:
+                    st.write(f"Hold-out true **{true}** · model made no call (middle band)")
+                else:
+                    match = meta["true_label"] == out["pred_label"]
+                    st.write(f"Hold-out true **{true}** · match **{'Yes' if match else 'No'}**")
             render_explanation(out["explanation"])
             st.warning(DISCLAIMER)

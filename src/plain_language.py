@@ -279,9 +279,17 @@ def build_plain_reading(
 
 def build_feature_plain(result: dict[str, Any]) -> dict[str, Any]:
     """Plain reading for a feature-table score, which never heard a microphone."""
-    code = "PD" if result.get("pred_label") == 1 else "HC"
+    label = result.get("pred_label")
+    code = "PD" if label == 1 else "UNCERTAIN" if label == -1 else "HC"
     probability = float(result.get("probability_pd") or 0.0)
-    if code == "PD":
+    thr = result.get("thresholds") or {}
+    if code == "UNCERTAIN":
+        headline = "These numbers sit between the Parkinson's and healthy examples in the lab dataset."
+        meaning = (
+            "This page did not listen to a voice. The score landed in the model's middle band, "
+            "so it makes no call either way."
+        )
+    elif code == "PD":
         headline = "These numbers sit closer to the Parkinson's examples in the lab dataset."
         meaning = (
             "This page did not listen to a voice. It compared a table of acoustic numbers with an older research dataset. "
@@ -301,7 +309,12 @@ def build_feature_plain(result: dict[str, Any]) -> dict[str, Any]:
         "meaning": meaning,
         "chance": (
             f"About {probability:.0%} of this model's weight falls on the Parkinson's side of its own scale. "
-            "This lab model uses a yes-or-no cutoff near 50%. The live microphone screen is more cautious and leaves a wide middle band."
+            + (
+                f"It calls the Parkinson's side at {float(thr['pd_high']):.0%} or more and the healthy side at "
+                f"{float(thr['hc_high']):.0%} or less; cut-offs come from validation data."
+                if thr
+                else "This lab model uses a yes-or-no cutoff near 50%."
+            )
         ),
         "heard": heard,
         "trust_label": "Lab numbers only",

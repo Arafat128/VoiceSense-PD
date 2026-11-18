@@ -113,8 +113,12 @@ def explain_prediction(
             else:
                 why_not.append(entry)
 
-    decision = "PD" if pred_label == 1 else "Healthy Control (not PD)"
-    confidence = proba_pd if pred_label == 1 else (1.0 - proba_pd)
+    if pred_label == -1:
+        decision = "Uncertain (between the model's cut-offs)"
+        confidence = max(proba_pd, 1.0 - proba_pd)
+    else:
+        decision = "PD" if pred_label == 1 else "Healthy Control (not PD)"
+        confidence = proba_pd if pred_label == 1 else (1.0 - proba_pd)
 
     n_pd = sum(1 for t in top if t["supports_pd"] is True)
     n_hc = sum(1 for t in top if t["supports_pd"] is False)
@@ -131,7 +135,12 @@ def explain_prediction(
         ),
     ]
 
-    if pred_label == 1:
+    if pred_label == -1:
+        summary_lines.append(
+            "Overall: the score falls between the model's PD and healthy cut-offs, "
+            "so no side is called."
+        )
+    elif pred_label == 1:
         summary_lines.append(
             "Overall: the classifier scores this sample toward PD because its acoustic pattern "
             "is nearer the PD training profile on important dysphonia/spectral cues "

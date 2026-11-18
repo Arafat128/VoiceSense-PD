@@ -48,7 +48,7 @@ def predict_from_features(
         series = frame.iloc[0]
 
     proba = float(pipe.predict_proba(frame)[0, 1])
-    pred = int(pipe.predict(frame)[0])
+    pred = table_label(pack, proba)
     explanation = explain_prediction(pack, series, proba, pred, top_k=top_k)
 
     return {
@@ -62,8 +62,24 @@ def predict_from_features(
         "probability_hc": 1.0 - proba,
         "explanation": explanation,
         "metrics_at_train_time": pack.get("metrics"),
+        "thresholds": pack.get("decision_thresholds"),
         "disclaimer": pack.get("disclaimer"),
     }
+
+
+def table_label(pack: dict[str, Any], proba: float) -> int:
+    """1 = PD side, 0 = healthy side, -1 = between the model's data-derived cut-offs.
+
+    Older table artifacts without saved cut-offs keep their 50% yes/no rule.
+    """
+    thr = pack.get("decision_thresholds")
+    if not thr:
+        return int(proba >= 0.5)
+    if proba >= float(thr["pd_high"]):
+        return 1
+    if proba <= float(thr["hc_high"]):
+        return 0
+    return -1
 
 
 def _add_engineered(feat_dict: dict[str, float]) -> dict[str, float]:
