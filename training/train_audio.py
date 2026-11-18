@@ -93,7 +93,7 @@ def train_live_audio_model(
     min_hc_age: float | None = None,
     italian_task: str = "vowels",
     repeats: int = 5,
-    augment: int = 0,
+    augment: int = 2,
     calibrate: bool = True,
     derive: bool = True,
     save: bool = True,
@@ -229,6 +229,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--italian-task", choices=("vowels", "connected"), default="vowels",
                         help="vowels = VA..VU (default). connected = old reading-task baseline.")
     parser.add_argument("--repeats", type=int, default=5, help="Repeats of speaker-grouped 5-fold CV.")
+    parser.add_argument("--augment", type=int, default=2,
+                        help="Random augmented copies per training clip (noise, gain, low-pass, phone band, reverb).")
     parser.add_argument("--no-calibration", action="store_true",
                         help="Skip speaker-grouped sigmoid calibration (for comparison only).")
     parser.add_argument("--fixed-thresholds", action="store_true",
@@ -241,6 +243,7 @@ def main(argv: list[str] | None = None) -> None:
         include_young_hc=args.include_young_hc,
         italian_task=args.italian_task,
         repeats=args.repeats,
+        augment=args.augment,
         calibrate=not args.no_calibration,
         derive=not args.fixed_thresholds,
         save=not args.report_only,

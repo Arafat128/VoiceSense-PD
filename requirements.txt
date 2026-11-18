@@ -7,3 +7,6 @@ praat-parselmouth==0.4.7
 soundfile==0.14.0
 joblib==1.5.3
 httpx==0.28.1
+# Offline training only (augmentation, UAMS demographics sheet)
+audiomentations==0.43.1
+openpyxl==3.1.5

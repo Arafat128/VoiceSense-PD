@@ -1,0 +1,142 @@
+{
+  "datasets": [
+    "italian"
+  ],
+  "model": "random_forest",
+  "repeats": 2,
+  "degradations": [
+    "noise_snr20",
+    "noise_snr10",
+    "gain_minus12db",
+    "lowpass_3k",
+    "phone_band_8k",
+    "reverb_rt60_0.4"
+  ],
+  "disclaimer": "This tool is a research screening support system only. It is NOT a medical diagnosis. Final decisions must be made by qualified clinicians.",
+  "runs": {
+    "without_augmentation": {
+      "clean": {
+        "auc": 0.8910413223140495,
+        "balanced_accuracy": 0.8140909090909091,
+        "sensitivity": 0.8145454545454546,
+        "specificity": 0.8136363636363636,
+        "brier": 0.14223837644823828,
+        "n": 495
+      },
+      "cutoffs": {
+        "pd_high": 0.5975,
+        "hc_high": 0.3813
+      },
+      "degraded": {
+        "noise_snr20": {
+          "mean_abs_change": 0.0832,
+          "band_flip_rate": 0.2485,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.8788,
+          "n": 495
+        },
+        "noise_snr10": {
+          "mean_abs_change": 0.1444,
+          "band_flip_rate": 0.396,
+          "flip_to_likely_from_healthy_band": 0.002,
+          "clip_auc": 0.8143,
+          "n": 495
+        },
+        "gain_minus12db": {
+          "mean_abs_change": 0.0008,
+          "band_flip_rate": 0.0061,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.8912,
+          "n": 495
+        },
+        "lowpass_3k": {
+          "mean_abs_change": 0.0106,
+          "band_flip_rate": 0.0384,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.8856,
+          "n": 495
+        },
+        "phone_band_8k": {
+          "mean_abs_change": 0.1142,
+          "band_flip_rate": 0.3192,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.7427,
+          "n": 495
+        },
+        "reverb_rt60_0.4": {
+          "mean_abs_change": 0.1273,
+          "band_flip_rate": 0.3313,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.8029,
+          "n": 495
+        }
+      },
+      "summary": {
+        "mean_abs_change": 0.0801,
+        "band_flip_rate": 0.2232
+      }
+    },
+    "with_augmentation": {
+      "clean": {
+        "auc": 0.8744628099173555,
+        "balanced_accuracy": 0.8013636363636363,
+        "sensitivity": 0.7890909090909091,
+        "specificity": 0.8136363636363636,
+        "brier": 0.1733480752894209,
+        "n": 495
+      },
+      "cutoffs": {
+        "pd_high": 0.5538,
+        "hc_high": 0.4111
+      },
+      "degraded": {
+        "noise_snr20": {
+          "mean_abs_change": 0.0396,
+          "band_flip_rate": 0.2101,
+          "flip_to_likely_from_healthy_band": 0.002,
+          "clip_auc": 0.8545,
+          "n": 495
+        },
+        "noise_snr10": {
+          "mean_abs_change": 0.0607,
+          "band_flip_rate": 0.3313,
+          "flip_to_likely_from_healthy_band": 0.004,
+          "clip_auc": 0.8236,
+          "n": 495
+        },
+        "gain_minus12db": {
+          "mean_abs_change": 0.0005,
+          "band_flip_rate": 0.002,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.8748,
+          "n": 495
+        },
+        "lowpass_3k": {
+          "mean_abs_change": 0.005,
+          "band_flip_rate": 0.0323,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.8718,
+          "n": 495
+        },
+        "phone_band_8k": {
+          "mean_abs_change": 0.0612,
+          "band_flip_rate": 0.2727,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.7441,
+          "n": 495
+        },
+        "reverb_rt60_0.4": {
+          "mean_abs_change": 0.0625,
+          "band_flip_rate": 0.2828,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.8065,
+          "n": 495
+        }
+      },
+      "summary": {
+        "mean_abs_change": 0.0382,
+        "band_flip_rate": 0.1885
+      }
+    }
+  }
+}

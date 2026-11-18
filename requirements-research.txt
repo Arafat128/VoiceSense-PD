@@ -1,0 +1,7 @@
+# Optional. Only for training/compare_features.py (eGeMAPS and WavLM).
+# The app never imports these.
+-r requirements.txt
+opensmile==2.6.0
+# CPU wheel: pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+torch==2.15.0
+transformers==5.23.0
