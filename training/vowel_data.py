@@ -205,8 +205,8 @@ def describe(manifest: pd.DataFrame) -> dict:
     for key, part in manifest.groupby("dataset"):
         subj = part.drop_duplicates("subject")
         out[key] = {
-            "clips": int(len(part)),
-            "speakers": int(len(subj)),
+            "clips": len(part),
+            "speakers": len(subj),
             "pd_speakers": int((subj["label"] == 1).sum()),
             "hc_speakers": int((subj["label"] == 0).sum()),
             "pd_clips": int((part["label"] == 1).sum()),

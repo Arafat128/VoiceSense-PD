@@ -86,4 +86,4 @@ def feature_columns(table: pd.DataFrame) -> list[str]:
     return [c for c in table.columns if c != "clip_id"]
 
 
-__all__ = ["egemaps_table", "wavlm_table", "feature_columns", "Path"]
+__all__ = ["Path", "egemaps_table", "feature_columns", "wavlm_table"]

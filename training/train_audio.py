@@ -23,7 +23,12 @@ import numpy as np
 
 from src.config import VOWEL_DATASETS
 from training.common import DISCLAIMER, MODELS_DIR, REPORTS_DIR, resolve_data_dir
-from training.evaluate import bootstrap_ci, derive_thresholds, fit_final, repeated_grouped_oof
+from training.evaluate import (
+    bootstrap_ci,
+    derive_thresholds,
+    fit_final,
+    repeated_grouped_oof,
+)
 from training.featurize import CLINICAL_FEATURES, build_features
 from training.vowel_data import describe, load_manifest
 

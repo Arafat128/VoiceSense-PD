@@ -166,7 +166,7 @@ def _binary_metrics(y: np.ndarray, p: np.ndarray, thr: float = 0.5) -> dict:
         "sensitivity": tp / max(tp + fn, 1),
         "specificity": tn / max(tn + fp, 1),
         "brier": float(brier_score_loss(y, p)),
-        "n": int(len(y)),
+        "n": len(y),
     }
 
 

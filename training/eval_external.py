@@ -18,7 +18,12 @@ import numpy as np
 import pandas as pd
 
 from src.models.registry import live_model_path
-from src.predict import MIN_CALL_DURATION_SEC, MIN_CALL_SNR_DB, MIN_CALL_VOICED, thresholds_for
+from src.predict import (
+    MIN_CALL_DURATION_SEC,
+    MIN_CALL_SNR_DB,
+    MIN_CALL_VOICED,
+    thresholds_for,
+)
 from training.common import DISCLAIMER, REPORTS_DIR, resolve_data_dir
 from training.evaluate import bootstrap_ci
 from training.featurize import build_features

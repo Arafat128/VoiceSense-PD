@@ -17,7 +17,6 @@ import argparse
 import json
 
 import numpy as np
-import pandas as pd
 
 from training.common import DISCLAIMER, REPORTS_DIR, resolve_data_dir
 from training.evaluate import bootstrap_ci, fit_final
@@ -91,11 +90,11 @@ def verdict(lodo: dict) -> dict:
         if fset == "praat":
             continue
         wins = sum(block[d]["auc"] > inc[d]["auc"] for d in DATASETS)
-        if block["mean_auc"] >= inc["mean_auc"] + MIN_GAIN and wins >= 2:
-            if winner == inc_key or block["mean_auc"] > lodo[winner]["mean_auc"]:
-                winner = key
-                text = (f"Switch to {key}: mean held-out AUC {block['mean_auc']:.3f} vs "
-                        f"{inc['mean_auc']:.3f} for {inc_key}, better on {wins}/3 held-out corpora.")
+        clears_rule = block["mean_auc"] >= inc["mean_auc"] + MIN_GAIN and wins >= 2
+        if clears_rule and (winner == inc_key or block["mean_auc"] > lodo[winner]["mean_auc"]):
+            winner = key
+            text = (f"Switch to {key}: mean held-out AUC {block['mean_auc']:.3f} vs "
+                    f"{inc['mean_auc']:.3f} for {inc_key}, better on {wins}/3 held-out corpora.")
     if winner == inc_key:
         others = ", ".join(f"{k} {b['mean_auc']:.3f}" for f, (k, b) in best.items() if f != "praat")
         text += f" No alternative cleared the rule (best alternatives: {others})."
