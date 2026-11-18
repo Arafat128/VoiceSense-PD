@@ -21,7 +21,7 @@ import streamlit as st
 from app.pages.privacy import render_export_receipt
 from app.widgets import (
     decision_policy_text,
-    validation_caption,
+    friendly_error,
     live_audio_available,
     render_everyday,
     render_explanation,
@@ -29,6 +29,7 @@ from app.widgets import (
     render_result_banner,
     set_flash,
     to_wav_bytes,
+    validation_caption,
 )
 from src.config import DISCLAIMER
 from src.privacy import bump_audio_nonce
@@ -64,14 +65,14 @@ def live_page() -> None:
             )
         with c2:
             st.markdown(
-                """
+                f"""
                 <div class="vs-card">
                   <h3>Decision policy</h3>
                   <p class="vs-muted">
-                    {policy_text}
+                    {decision_policy_text()}
                   </p>
                 </div>
-                """.format(policy_text=decision_policy_text()),
+                """,
                 unsafe_allow_html=True,
             )
 
@@ -186,20 +187,24 @@ def live_page() -> None:
                         bump_audio_nonce(st.session_state)
                         st.session_state["audio_discarded_after_analysis"] = True
                         st.rerun(scope="fragment")
+                    elif result.get("status") == "unreadable_audio":
+                        set_flash("error", result.get("message") or "This audio could not be analysed.")
+                        st.rerun(scope="fragment")
                     elif result.get("status") == "rejected_quality":
+                        reasons = "; ".join(str(m) for m in (result.get("messages") or [])[:3])
                         set_flash(
                             "error",
-                            "Analysis failed: recording quality too low. Re-record a quiet 5–8s vowel.",
+                            "Recording quality too low to analyse"
+                            + (f" ({reasons})" if reasons else "")
+                            + ". Re-record a steady 5–8 s “aaa” in a quiet room, 15–20 cm from the mic.",
                         )
                         st.rerun(scope="fragment")
                     else:
                         set_flash("error", f"Analysis failed: {result.get('status', 'unknown error')}")
                         st.rerun(scope="fragment")
                 except Exception as e:  # noqa: BLE001
-                    set_flash("error", f"Analysis failed: {e}")
-                    st.session_state["last_live_error"] = "".join(
-                        traceback.format_exception_only(type(e), e)
-                    )
+                    set_flash("error", friendly_error(e))
+                    st.session_state["last_live_error"] = friendly_error(e)
                     st.session_state["last_live_trace"] = traceback.format_exc()
                     st.rerun(scope="fragment")
 
@@ -239,6 +244,11 @@ def live_page() -> None:
                 render_result_banner(primary)
                 render_everyday(plain)
                 st.caption(f"Recording set · {len(takes)} of 3 kept")
+                st.caption(
+                    "How much to trust this: on recordings from a setup the model never trained on, "
+                    "its accuracy is close to chance (see About & method). Use it to explore, "
+                    "not to decide anything about your health."
+                )
                 if takes and st.button("Start a new set of 3 recordings", key="reset_takes"):
                     st.session_state["live_takes"] = []
                     st.rerun(scope="fragment")
@@ -247,8 +257,8 @@ def live_page() -> None:
                 thr = primary.get("thresholds") or {}
                 if thr:
                     st.caption(
-                        f"Policy · a firm PD call needs P≥{thr.get('pd_high', 0.72):.0%}, "
-                        f"a firm healthy call needs P≤{thr.get('hc_high', 0.42):.0%}, "
+                        f"Policy · a firm PD call needs P≥{thr['pd_high']:.0%}, "
+                        f"a firm healthy call needs P≤{thr['hc_high']:.0%} (cut-offs from validation data), "
                         "and both also need a clean clip (at least 4s, low noise, mostly voiced) "
                         "plus agreement from the second model. Otherwise the result stays Uncertain."
                     )

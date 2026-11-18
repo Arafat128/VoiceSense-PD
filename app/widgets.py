@@ -52,6 +52,10 @@ def live_audio_available() -> bool:
     return any((ROOT / "models").glob("live_audio_italian__*.joblib"))
 
 
+MAX_UPLOAD_MB = 25
+MAX_DECODE_SECONDS = 60.0
+
+
 def to_wav_bytes(raw: bytes) -> bytes:
     """Normalize browser or upload audio to WAV bytes for analysis.
 
@@ -61,6 +65,11 @@ def to_wav_bytes(raw: bytes) -> bytes:
     if not raw:
         raise RuntimeError(
             "No audio bytes were captured. Record or upload a clip, then analyze again."
+        )
+    if len(raw) > MAX_UPLOAD_MB * 1024 * 1024:
+        raise RuntimeError(
+            f"This file is {len(raw) / 1024 / 1024:.0f} MB. Upload a clip under {MAX_UPLOAD_MB} MB; "
+            "a 5–8 second vowel is all the model needs."
         )
     try:
         import librosa
@@ -81,12 +90,16 @@ def to_wav_bytes(raw: bytes) -> bytes:
             tmp.write(raw)
             path = tmp.name
         try:
-            y, sr = librosa.load(path, sr=22050, mono=True)
+            # Only the first minute is decoded; the model reads at most 12 s.
+            y, sr = librosa.load(path, sr=22050, mono=True, duration=MAX_DECODE_SECONDS)
         finally:
             Path(path).unlink(missing_ok=True)
 
-        if y.size == 0:
-            raise RuntimeError("the file decoded to silence")
+        if y.size == 0 or float(np.max(np.abs(y))) < 1e-4:
+            raise RuntimeError(
+                "The recording is silent. Check that the browser has microphone permission "
+                "and the right input device is selected, then record again."
+            )
 
         peak = float(np.max(np.abs(y)) + 1e-9)
         y = (0.95 * y / peak).astype("float32")
@@ -230,3 +243,20 @@ def decision_policy_text() -> str:
             "(0.5 = chance), so treat any result as a research demo, not a screening result."
         )
     return text
+
+
+def friendly_error(exc: BaseException) -> str:
+    """Turn an analysis exception into one line a non-programmer can act on."""
+    if isinstance(exc, FileNotFoundError):
+        return (
+            "The live model files are missing. Run `python -m training.train_audio "
+            "--data-dir <dataset root>` or restore the models/ folder."
+        )
+    if isinstance(exc, MemoryError):
+        return "The clip is too large to analyse. Upload a shorter recording (5–8 seconds is enough)."
+    if isinstance(exc, RuntimeError) and str(exc):
+        return str(exc)
+    return (
+        "Analysis failed unexpectedly. Try one more recording; set VOICESENSE_DEBUG=1 "
+        f"to see details. ({type(exc).__name__})"
+    )

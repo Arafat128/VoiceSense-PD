@@ -7,7 +7,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 from .config import DISCLAIMER
@@ -284,7 +283,18 @@ def predict_from_audio(
     language_mode: 'english' | 'bangla' | 'auto'. Recorded for the receipt only.
     The decision always comes from the live vowel model (same extractor as training).
     """
-    extraction = extract_features(source)
+    try:
+        extraction = extract_features(source)
+    except Exception as exc:  # noqa: BLE001 - a bad file should explain itself, not crash
+        return {
+            "status": "unreadable_audio",
+            "message": (
+                "This audio could not be analysed. Record a steady 5–8 second vowel, "
+                "or upload a WAV, MP3, OGG, WEBM, M4A, or FLAC file."
+            ),
+            "detail": f"{type(exc).__name__}: {exc}"[:300],
+            "disclaimer": DISCLAIMER,
+        }
     quality = extraction.quality.as_dict()
 
     if require_quality_ok and not extraction.quality.ok:
