@@ -20,89 +20,134 @@ from typing import Any
 
 import joblib
 import numpy as np
-from sklearn.calibration import CalibratedClassifierCV
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.impute import SimpleImputer
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
-from sklearn.model_selection import StratifiedGroupKFold, cross_val_score
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
 
-from training.common import (
-    DISCLAIMER,
-    MODELS_DIR,
-    RANDOM_STATE,
-    REPORTS_DIR,
-    SPLIT_METHOD,
-    resolve_data_dir,
-    stratified_group_holdout,
-)
+from training.common import DISCLAIMER, MODELS_DIR, REPORTS_DIR, resolve_data_dir
+from training.evaluate import bootstrap_ci, derive_thresholds, fit_final, repeated_grouped_oof
 from training.featurize import CLINICAL_FEATURES, build_features
 from training.vowel_data import describe, load_manifest
 
 # Config flag: young healthy controls are an age confound, so they are off.
 INCLUDE_YOUNG_HC = False
 
+# Fixed cut-offs used until thresholds are derived from data.
 DECISION_THRESHOLDS = {"pd_high": 0.72, "hc_high": 0.42}
 
+MODEL_NAMES = ("random_forest", "svm_rbf")
+PROTOCOL = "speaker-grouped stratified 5-fold CV, repeated {repeats}x; 95% CI = 1000x speaker bootstrap"
 
-def _models() -> dict[str, Pipeline]:
-    rf = RandomForestClassifier(
-        n_estimators=500, max_features="sqrt", class_weight="balanced_subsample",
-        random_state=RANDOM_STATE, n_jobs=-1, min_samples_leaf=3, max_depth=8,
+
+def _flat_metrics(ci: dict, repeats_auc: list[float], protocol: str) -> dict:
+    """Compact metric block stored in the artifact and shown in the app."""
+    out = {"protocol": protocol}
+    for level in ("clip", "person"):
+        for key in ("auc", "balanced_accuracy", "sensitivity", "specificity"):
+            out[f"{level}_{key}"] = ci[level][key]["value"]
+            out[f"{level}_{key}_ci95"] = ci[level][key]["ci95"]
+        out[f"{level}_n"] = ci[level]["n"]
+    out["clip_auc_repeat_mean"] = float(np.mean(repeats_auc))
+    out["clip_auc_repeat_sd"] = float(np.std(repeats_auc))
+    return out
+
+
+def load_table(data_dir, datasets, *, include_young_hc, min_hc_age, italian_task, augment):
+    manifest = load_manifest(data_dir, tuple(datasets), include_young_hc=include_young_hc,
+                             min_hc_age=min_hc_age, italian_task=italian_task)
+    variants = ("clean",) + tuple(f"aug{i}" for i in range(augment))
+    cache = "vowels" if italian_task == "vowels" else "italian_connected"
+    table = build_features(manifest, variants, cache_name=cache)
+    bad = table["error"].fillna("") != ""
+    if bad.any():
+        print(f"[warn] {int(bad.sum())} clip variants failed extraction and are skipped")
+    return manifest, table[~bad].reset_index(drop=True), variants
+
+
+def evaluate_config(table, variants, *, repeats, calibrate, derive, features=None) -> dict:
+    features = features or list(CLINICAL_FEATURES)
+    out = {}
+    for name in MODEL_NAMES:
+        print(f"{name}: {repeats}x speaker-grouped 5-fold CV")
+        oof = repeated_grouped_oof(table, features, name, repeats=repeats, train_variants=variants,
+                                   calibrate=calibrate)
+        clean = oof.clips[oof.clips["variant"] == "clean"]
+        ci = bootstrap_ci(clean)
+        block = {
+            "cv": ci,
+            "repeat_clip_auc": [round(m["clip"]["auc"], 4) for m in oof.per_repeat],
+            "repeat_person_auc": [round(m["person"]["auc"], 4) for m in oof.per_repeat],
+        }
+        if clean["dataset"].nunique() > 1:
+            block["by_dataset"] = {k: bootstrap_ci(part) for k, part in clean.groupby("dataset")}
+        thresholds = derive_thresholds(clean) if derive else dict(DECISION_THRESHOLDS)
+        if not derive:
+            thresholds["method"] = "fixed (not derived from data)"
+        block["thresholds"] = thresholds
+        out[name] = {"block": block, "oof": oof}
+    return out
+
+
+def train_live_audio_model(
+    data_dir,
+    *,
+    datasets: tuple[str, ...] = ("italian",),
+    include_young_hc: bool = INCLUDE_YOUNG_HC,
+    min_hc_age: float | None = None,
+    italian_task: str = "vowels",
+    repeats: int = 5,
+    augment: int = 0,
+    calibrate: bool = False,
+    derive: bool = False,
+    save: bool = True,
+    report_name: str = "live_audio_metrics.json",
+) -> dict[str, Any]:
+    manifest, table, variants = load_table(
+        data_dir, datasets, include_young_hc=include_young_hc, min_hc_age=min_hc_age,
+        italian_task=italian_task, augment=augment,
     )
-    svm = CalibratedClassifierCV(
-        SVC(kernel="rbf", C=5.0, gamma="scale", class_weight="balanced", random_state=RANDOM_STATE),
-        method="sigmoid", cv=3,
-    )
-    return {
-        name: Pipeline([("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler()), ("clf", clf)])
-        for name, clf in (("random_forest", rf), ("svm_rbf", svm))
-    }
-
-
-def train_live_audio_model(data_dir, *, include_young_hc: bool = INCLUDE_YOUNG_HC,
-                           italian_task: str = "vowels") -> dict[str, Any]:
-    manifest = load_manifest(data_dir, ("italian",), include_young_hc=include_young_hc,
-                             italian_task=italian_task)
-    table = build_features(manifest, ("clean",), cache_name="vowels" if italian_task == "vowels" else "italian_connected")
-    table = table[table["error"].fillna("") == ""].reset_index(drop=True)
     features = list(CLINICAL_FEATURES)
-    X = table[features]
-    y = table["label"].to_numpy(int)
-    groups = table["subject"].to_numpy()
-    train_idx, test_idx = stratified_group_holdout(y, groups)
+    config = {
+        "datasets": list(datasets),
+        "include_young_hc": include_young_hc,
+        "min_hc_age": min_hc_age,
+        "italian_task": italian_task,
+        "augment_copies": augment,
+        "grouped_calibration": calibrate,
+        "data_thresholds": derive,
+        "repeats": repeats,
+        "speaker_weighting": "each speaker weighs 1 regardless of clip count",
+    }
+    protocol = PROTOCOL.format(repeats=repeats)
     results: dict[str, Any] = {
-        "dataset": "Italian sustained vowels, PD vs elderly healthy",
-        "config": {"include_young_hc": include_young_hc, "italian_task": italian_task},
+        "dataset": " + ".join(datasets) + (" sustained vowels" if italian_task == "vowels" else " reading tasks"),
+        "config": config,
         "datasets": describe(manifest),
         "n_features": len(features),
-        "split": {"method": SPLIT_METHOD, "train_samples": len(train_idx), "test_samples": len(test_idx)},
+        "feature_names": features,
+        "validation_protocol": protocol,
         "models": {},
         "disclaimer": DISCLAIMER,
-        "feature_names": features,
     }
-    for name, pipe in _models().items():
-        pipe.fit(X.iloc[train_idx], y[train_idx])
-        prob = pipe.predict_proba(X.iloc[test_idx])[:, 1]
-        pred = (prob >= 0.5).astype(int)
-        yt = y[test_idx]
-        metrics = {
-            "accuracy": float(accuracy_score(yt, pred)),
-            "precision": float(precision_score(yt, pred, zero_division=0)),
-            "recall": float(recall_score(yt, pred, zero_division=0)),
-            "f1": float(f1_score(yt, pred, zero_division=0)),
-            "roc_auc": float(roc_auc_score(yt, prob)),
-        }
-        cv = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
-        cv_f1 = cross_val_score(pipe, X, y, groups=groups, cv=cv, scoring="f1")
-        metrics["cv_f1_mean"], metrics["cv_f1_std"] = float(cv_f1.mean()), float(cv_f1.std())
-        pipe.fit(X, y)
-        _save(name, pipe, X, y, features, metrics, DECISION_THRESHOLDS, results["config"])
-        results["models"][name] = {"metrics": metrics}
-        print(name, json.dumps(metrics))
-    _write_pointer_and_report(results, features)
+    evals = evaluate_config(table, variants, repeats=repeats, calibrate=calibrate, derive=derive)
+    clean = table[table["variant"] == "clean"]
+    for name in MODEL_NAMES:
+        block = evals[name]["block"]
+        flat = _flat_metrics(block["cv"], block["repeat_clip_auc"], protocol)
+        results["models"][name] = {"metrics": flat, **block}
+        print(f"  {name}: person AUC {flat['person_auc']:.3f} {flat['person_auc_ci95']}  "
+              f"clip AUC {flat['clip_auc']:.3f} {flat['clip_auc_ci95']}")
+        if save:
+            pipe = fit_final(name, table, features, train_variants=variants, calibrate=calibrate)
+            X = clean[features]
+            y = clean["label"].to_numpy(int)
+            thresholds = {k: block["thresholds"][k] for k in ("pd_high", "hc_high")}
+            _save(name, pipe, X, y, features, flat, thresholds, config,
+                  extra={"threshold_method": block["thresholds"].get("method"),
+                         "threshold_observed": block["thresholds"].get("observed")})
+    if save:
+        _write_pointer_and_report(results, features, report_name=report_name)
+    else:
+        REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+        with open(REPORTS_DIR / report_name, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2)
     return results
 
 
@@ -160,7 +205,8 @@ def _save(name, pipe, X, y, features, metrics, thresholds, config, extra=None) -
     joblib.dump(art, MODELS_DIR / f"{art['dataset_key']}__{name}.joblib", compress=3)
 
 
-def _write_pointer_and_report(results: dict, features: list[str], dataset_key: str = "live_audio_italian") -> None:
+def _write_pointer_and_report(results: dict, features: list[str], dataset_key: str = "live_audio_italian",
+                              report_name: str = "live_audio_metrics.json") -> None:
     default = "random_forest"
     pointer = {
         "default_model": default,
@@ -171,7 +217,7 @@ def _write_pointer_and_report(results: dict, features: list[str], dataset_key: s
     joblib.dump(pointer, MODELS_DIR / "live_audio_default.joblib")
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     results["app_default_model"] = default
-    with open(REPORTS_DIR / "live_audio_metrics.json", "w", encoding="utf-8") as f:
+    with open(REPORTS_DIR / report_name, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
 
 
@@ -182,9 +228,18 @@ def main(argv: list[str] | None = None) -> None:
                         help="Add young healthy controls (age confound; off by default).")
     parser.add_argument("--italian-task", choices=("vowels", "connected"), default="vowels",
                         help="vowels = VA..VU (default). connected = old reading-task baseline.")
+    parser.add_argument("--repeats", type=int, default=5, help="Repeats of speaker-grouped 5-fold CV.")
+    parser.add_argument("--report-only", metavar="NAME",
+                        help="Write reports/NAME and do not replace the shipped models.")
     args = parser.parse_args(argv)
-    train_live_audio_model(resolve_data_dir(args.data_dir), include_young_hc=args.include_young_hc,
-                           italian_task=args.italian_task)
+    train_live_audio_model(
+        resolve_data_dir(args.data_dir),
+        include_young_hc=args.include_young_hc,
+        italian_task=args.italian_task,
+        repeats=args.repeats,
+        save=not args.report_only,
+        report_name=args.report_only or "live_audio_metrics.json",
+    )
     print(DISCLAIMER)
 
 

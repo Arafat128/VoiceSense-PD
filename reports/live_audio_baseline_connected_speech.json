@@ -1,0 +1,337 @@
+{
+  "dataset": "italian reading tasks",
+  "config": {
+    "datasets": [
+      "italian"
+    ],
+    "include_young_hc": true,
+    "min_hc_age": null,
+    "italian_task": "connected",
+    "augment_copies": 0,
+    "grouped_calibration": false,
+    "data_thresholds": false,
+    "repeats": 5,
+    "speaker_weighting": "each speaker weighs 1 regardless of clip count"
+  },
+  "datasets": {
+    "italian": {
+      "clips": 189,
+      "speakers": 62,
+      "pd_speakers": 25,
+      "hc_speakers": 37,
+      "pd_clips": 80,
+      "hc_clips": 109,
+      "mean_age_pd": null,
+      "mean_age_hc": null
+    }
+  },
+  "n_features": 34,
+  "feature_names": [
+    "praat_f0_mean",
+    "praat_f0_min",
+    "praat_f0_max",
+    "praat_f0_std",
+    "praat_local_jitter",
+    "praat_local_abs_jitter",
+    "praat_rap_jitter",
+    "praat_ppq5_jitter",
+    "praat_ddp_jitter",
+    "praat_local_shimmer",
+    "praat_local_db_shimmer",
+    "praat_apq3",
+    "praat_apq5",
+    "praat_apq11",
+    "praat_dda",
+    "praat_hnr",
+    "praat_nhr",
+    "praat_ppe",
+    "praat_rpde",
+    "praat_dfa",
+    "praat_spread1",
+    "praat_spread2",
+    "praat_d2",
+    "praat_mean_intensity",
+    "praat_min_intensity",
+    "praat_max_intensity",
+    "praat_mean_period",
+    "praat_std_period",
+    "praat_mean_autocorr_harmonicity",
+    "voiced_fraction",
+    "f0_cv",
+    "f0_range",
+    "intensity_range",
+    "jitter_shimmer_product"
+  ],
+  "validation_protocol": "speaker-grouped stratified 5-fold CV, repeated 5x; 95% CI = 1000x speaker bootstrap",
+  "models": {
+    "random_forest": {
+      "metrics": {
+        "protocol": "speaker-grouped stratified 5-fold CV, repeated 5x; 95% CI = 1000x speaker bootstrap",
+        "clip_auc": 0.9501,
+        "clip_auc_ci95": [
+          0.8976,
+          0.9908
+        ],
+        "clip_balanced_accuracy": 0.9133,
+        "clip_balanced_accuracy_ci95": [
+          0.86,
+          0.9631
+        ],
+        "clip_sensitivity": 0.9,
+        "clip_sensitivity_ci95": [
+          0.8068,
+          0.9821
+        ],
+        "clip_specificity": 0.9266,
+        "clip_specificity_ci95": [
+          0.8672,
+          0.9806
+        ],
+        "clip_n": 189,
+        "person_auc": 0.9924,
+        "person_auc_ci95": [
+          0.9756,
+          1.0
+        ],
+        "person_balanced_accuracy": 0.953,
+        "person_balanced_accuracy_ci95": [
+          0.8939,
+          1.0
+        ],
+        "person_sensitivity": 0.96,
+        "person_sensitivity_ci95": [
+          0.8666,
+          1.0
+        ],
+        "person_specificity": 0.9459,
+        "person_specificity_ci95": [
+          0.8611,
+          1.0
+        ],
+        "person_n": 62,
+        "clip_auc_repeat_mean": 0.9493,
+        "clip_auc_repeat_sd": 0.008059032199960457
+      },
+      "cv": {
+        "clip": {
+          "auc": {
+            "value": 0.9501,
+            "ci95": [
+              0.8976,
+              0.9908
+            ]
+          },
+          "balanced_accuracy": {
+            "value": 0.9133,
+            "ci95": [
+              0.86,
+              0.9631
+            ]
+          },
+          "sensitivity": {
+            "value": 0.9,
+            "ci95": [
+              0.8068,
+              0.9821
+            ]
+          },
+          "specificity": {
+            "value": 0.9266,
+            "ci95": [
+              0.8672,
+              0.9806
+            ]
+          },
+          "n": 189,
+          "brier": 0.0727
+        },
+        "person": {
+          "auc": {
+            "value": 0.9924,
+            "ci95": [
+              0.9756,
+              1.0
+            ]
+          },
+          "balanced_accuracy": {
+            "value": 0.953,
+            "ci95": [
+              0.8939,
+              1.0
+            ]
+          },
+          "sensitivity": {
+            "value": 0.96,
+            "ci95": [
+              0.8666,
+              1.0
+            ]
+          },
+          "specificity": {
+            "value": 0.9459,
+            "ci95": [
+              0.8611,
+              1.0
+            ]
+          },
+          "n": 62,
+          "brier": 0.0503
+        }
+      },
+      "repeat_clip_auc": [
+        0.9571,
+        0.9454,
+        0.9361,
+        0.9579,
+        0.95
+      ],
+      "repeat_person_auc": [
+        0.9935,
+        0.9903,
+        0.9903,
+        0.9935,
+        0.9946
+      ],
+      "thresholds": {
+        "pd_high": 0.72,
+        "hc_high": 0.42,
+        "method": "fixed (not derived from data)"
+      }
+    },
+    "svm_rbf": {
+      "metrics": {
+        "protocol": "speaker-grouped stratified 5-fold CV, repeated 5x; 95% CI = 1000x speaker bootstrap",
+        "clip_auc": 0.9533,
+        "clip_auc_ci95": [
+          0.8928,
+          0.9894
+        ],
+        "clip_balanced_accuracy": 0.9025,
+        "clip_balanced_accuracy_ci95": [
+          0.8582,
+          0.9437
+        ],
+        "clip_sensitivity": 0.8875,
+        "clip_sensitivity_ci95": [
+          0.8133,
+          0.9474
+        ],
+        "clip_specificity": 0.9174,
+        "clip_specificity_ci95": [
+          0.8655,
+          0.9684
+        ],
+        "clip_n": 189,
+        "person_auc": 0.9957,
+        "person_auc_ci95": [
+          0.9835,
+          1.0
+        ],
+        "person_balanced_accuracy": 0.9665,
+        "person_balanced_accuracy_ci95": [
+          0.9164,
+          1.0
+        ],
+        "person_sensitivity": 0.96,
+        "person_sensitivity_ci95": [
+          0.8666,
+          1.0
+        ],
+        "person_specificity": 0.973,
+        "person_specificity_ci95": [
+          0.9189,
+          1.0
+        ],
+        "person_n": 62,
+        "clip_auc_repeat_mean": 0.95164,
+        "clip_auc_repeat_sd": 0.002117167919651154
+      },
+      "cv": {
+        "clip": {
+          "auc": {
+            "value": 0.9533,
+            "ci95": [
+              0.8928,
+              0.9894
+            ]
+          },
+          "balanced_accuracy": {
+            "value": 0.9025,
+            "ci95": [
+              0.8582,
+              0.9437
+            ]
+          },
+          "sensitivity": {
+            "value": 0.8875,
+            "ci95": [
+              0.8133,
+              0.9474
+            ]
+          },
+          "specificity": {
+            "value": 0.9174,
+            "ci95": [
+              0.8655,
+              0.9684
+            ]
+          },
+          "n": 189,
+          "brier": 0.0691
+        },
+        "person": {
+          "auc": {
+            "value": 0.9957,
+            "ci95": [
+              0.9835,
+              1.0
+            ]
+          },
+          "balanced_accuracy": {
+            "value": 0.9665,
+            "ci95": [
+              0.9164,
+              1.0
+            ]
+          },
+          "sensitivity": {
+            "value": 0.96,
+            "ci95": [
+              0.8666,
+              1.0
+            ]
+          },
+          "specificity": {
+            "value": 0.973,
+            "ci95": [
+              0.9189,
+              1.0
+            ]
+          },
+          "n": 62,
+          "brier": 0.043
+        }
+      },
+      "repeat_clip_auc": [
+        0.9493,
+        0.9508,
+        0.9509,
+        0.9556,
+        0.9516
+      ],
+      "repeat_person_auc": [
+        0.9946,
+        0.9968,
+        0.9935,
+        0.9957,
+        0.9957
+      ],
+      "thresholds": {
+        "pd_high": 0.72,
+        "hc_high": 0.42,
+        "method": "fixed (not derived from data)"
+      }
+    }
+  },
+  "disclaimer": "This tool is a research screening support system only. It is NOT a medical diagnosis. Final decisions must be made by qualified clinicians."
+}

@@ -185,3 +185,20 @@ def render_everyday(plain: dict[str, Any]) -> None:
         """,
         unsafe_allow_html=True,
     )
+
+
+def validation_caption(m: dict) -> str:
+    """One line describing how the live model was validated."""
+    if "person_auc" not in m:
+        return (
+            f"Train-time subject-aware: acc={m.get('accuracy', 0):.3f} · "
+            f"F1={m.get('f1', 0):.3f} · AUC={m.get('roc_auc')}"
+        )
+    p_lo, p_hi = m.get("person_auc_ci95") or (0, 0)
+    c_lo, c_hi = m.get("clip_auc_ci95") or (0, 0)
+    return (
+        f"Validation ({m.get('protocol', 'speaker-grouped CV')}): "
+        f"per-person AUC {m['person_auc']:.2f} (95% CI {p_lo:.2f}–{p_hi:.2f}) · "
+        f"per-clip AUC {m.get('clip_auc', 0):.2f} (95% CI {c_lo:.2f}–{c_hi:.2f}). "
+        "Same-corpus estimate; other microphones and languages score lower."
+    )

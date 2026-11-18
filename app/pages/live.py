@@ -20,6 +20,7 @@ import streamlit as st
 
 from app.pages.privacy import render_export_receipt
 from app.widgets import (
+    validation_caption,
     live_audio_available,
     render_everyday,
     render_explanation,
@@ -313,12 +314,7 @@ def live_page() -> None:
                     f"completeness {primary.get('completeness', 0):.0%}"
                 )
                 if primary.get("metrics_at_train_time"):
-                    m = primary["metrics_at_train_time"]
-                    st.caption(
-                        f"Train-time subject-aware: acc={m.get('accuracy', 0):.3f} · "
-                        f"F1={m.get('f1', 0):.3f} · AUC={m.get('roc_auc')} · "
-                        f"CV F1={m.get('cv_f1_mean', 0):.3f}±{m.get('cv_f1_std', 0):.3f}"
-                    )
+                    st.caption(validation_caption(primary["metrics_at_train_time"]))
 
                 render_explanation(primary.get("explanation") or {}, "Why this decision")
 

@@ -1,8 +1,17 @@
 {
-  "dataset": "Italian sustained vowels, PD vs elderly healthy",
+  "dataset": "italian sustained vowels",
   "config": {
+    "datasets": [
+      "italian"
+    ],
     "include_young_hc": false,
-    "italian_task": "vowels"
+    "min_hc_age": null,
+    "italian_task": "vowels",
+    "augment_copies": 0,
+    "grouped_calibration": false,
+    "data_thresholds": false,
+    "repeats": 5,
+    "speaker_weighting": "each speaker weighs 1 regardless of clip count"
   },
   "datasets": {
     "italian": {
@@ -17,36 +26,6 @@
     }
   },
   "n_features": 34,
-  "split": {
-    "method": "subject-balanced group holdout 80/20",
-    "train_samples": 405,
-    "test_samples": 90
-  },
-  "models": {
-    "random_forest": {
-      "metrics": {
-        "accuracy": 0.7555555555555555,
-        "precision": 0.8043478260869565,
-        "recall": 0.74,
-        "f1": 0.7708333333333334,
-        "roc_auc": 0.836,
-        "cv_f1_mean": 0.8350440287694664,
-        "cv_f1_std": 0.05701298890883333
-      }
-    },
-    "svm_rbf": {
-      "metrics": {
-        "accuracy": 0.7666666666666667,
-        "precision": 0.8918918918918919,
-        "recall": 0.66,
-        "f1": 0.7586206896551724,
-        "roc_auc": 0.855,
-        "cv_f1_mean": 0.8235792160235249,
-        "cv_f1_std": 0.07732741884061212
-      }
-    }
-  },
-  "disclaimer": "This tool is a research screening support system only. It is NOT a medical diagnosis. Final decisions must be made by qualified clinicians.",
   "feature_names": [
     "praat_f0_mean",
     "praat_f0_min",
@@ -83,5 +62,277 @@
     "intensity_range",
     "jitter_shimmer_product"
   ],
+  "validation_protocol": "speaker-grouped stratified 5-fold CV, repeated 5x; 95% CI = 1000x speaker bootstrap",
+  "models": {
+    "random_forest": {
+      "metrics": {
+        "protocol": "speaker-grouped stratified 5-fold CV, repeated 5x; 95% CI = 1000x speaker bootstrap",
+        "clip_auc": 0.9024,
+        "clip_auc_ci95": [
+          0.8433,
+          0.9504
+        ],
+        "clip_balanced_accuracy": 0.8205,
+        "clip_balanced_accuracy_ci95": [
+          0.7609,
+          0.8759
+        ],
+        "clip_sensitivity": 0.8,
+        "clip_sensitivity_ci95": [
+          0.7222,
+          0.872
+        ],
+        "clip_specificity": 0.8409,
+        "clip_specificity_ci95": [
+          0.7429,
+          0.9222
+        ],
+        "clip_n": 495,
+        "person_auc": 0.9782,
+        "person_auc_ci95": [
+          0.9236,
+          1.0
+        ],
+        "person_balanced_accuracy": 0.9118,
+        "person_balanced_accuracy_ci95": [
+          0.8238,
+          0.9808
+        ],
+        "person_sensitivity": 0.96,
+        "person_sensitivity_ci95": [
+          0.8636,
+          1.0
+        ],
+        "person_specificity": 0.8636,
+        "person_specificity_ci95": [
+          0.6957,
+          1.0
+        ],
+        "person_n": 47,
+        "clip_auc_repeat_mean": 0.89592,
+        "clip_auc_repeat_sd": 0.007956230263133418
+      },
+      "cv": {
+        "clip": {
+          "auc": {
+            "value": 0.9024,
+            "ci95": [
+              0.8433,
+              0.9504
+            ]
+          },
+          "balanced_accuracy": {
+            "value": 0.8205,
+            "ci95": [
+              0.7609,
+              0.8759
+            ]
+          },
+          "sensitivity": {
+            "value": 0.8,
+            "ci95": [
+              0.7222,
+              0.872
+            ]
+          },
+          "specificity": {
+            "value": 0.8409,
+            "ci95": [
+              0.7429,
+              0.9222
+            ]
+          },
+          "n": 495,
+          "brier": 0.1274
+        },
+        "person": {
+          "auc": {
+            "value": 0.9782,
+            "ci95": [
+              0.9236,
+              1.0
+            ]
+          },
+          "balanced_accuracy": {
+            "value": 0.9118,
+            "ci95": [
+              0.8238,
+              0.9808
+            ]
+          },
+          "sensitivity": {
+            "value": 0.96,
+            "ci95": [
+              0.8636,
+              1.0
+            ]
+          },
+          "specificity": {
+            "value": 0.8636,
+            "ci95": [
+              0.6957,
+              1.0
+            ]
+          },
+          "n": 47,
+          "brier": 0.0986
+        }
+      },
+      "repeat_clip_auc": [
+        0.9012,
+        0.8916,
+        0.9069,
+        0.8837,
+        0.8962
+      ],
+      "repeat_person_auc": [
+        0.9782,
+        0.9691,
+        0.9818,
+        0.9691,
+        0.98
+      ],
+      "thresholds": {
+        "pd_high": 0.72,
+        "hc_high": 0.42,
+        "method": "fixed (not derived from data)"
+      }
+    },
+    "svm_rbf": {
+      "metrics": {
+        "protocol": "speaker-grouped stratified 5-fold CV, repeated 5x; 95% CI = 1000x speaker bootstrap",
+        "clip_auc": 0.8388,
+        "clip_auc_ci95": [
+          0.7675,
+          0.9011
+        ],
+        "clip_balanced_accuracy": 0.7645,
+        "clip_balanced_accuracy_ci95": [
+          0.6968,
+          0.8306
+        ],
+        "clip_sensitivity": 0.7745,
+        "clip_sensitivity_ci95": [
+          0.6851,
+          0.8634
+        ],
+        "clip_specificity": 0.7545,
+        "clip_specificity_ci95": [
+          0.65,
+          0.8571
+        ],
+        "clip_n": 495,
+        "person_auc": 0.92,
+        "person_auc_ci95": [
+          0.8279,
+          0.9855
+        ],
+        "person_balanced_accuracy": 0.8718,
+        "person_balanced_accuracy_ci95": [
+          0.7756,
+          0.96
+        ],
+        "person_sensitivity": 0.88,
+        "person_sensitivity_ci95": [
+          0.75,
+          1.0
+        ],
+        "person_specificity": 0.8636,
+        "person_specificity_ci95": [
+          0.7059,
+          1.0
+        ],
+        "person_n": 47,
+        "clip_auc_repeat_mean": 0.83712,
+        "clip_auc_repeat_sd": 0.01237520100846851
+      },
+      "cv": {
+        "clip": {
+          "auc": {
+            "value": 0.8388,
+            "ci95": [
+              0.7675,
+              0.9011
+            ]
+          },
+          "balanced_accuracy": {
+            "value": 0.7645,
+            "ci95": [
+              0.6968,
+              0.8306
+            ]
+          },
+          "sensitivity": {
+            "value": 0.7745,
+            "ci95": [
+              0.6851,
+              0.8634
+            ]
+          },
+          "specificity": {
+            "value": 0.7545,
+            "ci95": [
+              0.65,
+              0.8571
+            ]
+          },
+          "n": 495,
+          "brier": 0.162
+        },
+        "person": {
+          "auc": {
+            "value": 0.92,
+            "ci95": [
+              0.8279,
+              0.9855
+            ]
+          },
+          "balanced_accuracy": {
+            "value": 0.8718,
+            "ci95": [
+              0.7756,
+              0.96
+            ]
+          },
+          "sensitivity": {
+            "value": 0.88,
+            "ci95": [
+              0.75,
+              1.0
+            ]
+          },
+          "specificity": {
+            "value": 0.8636,
+            "ci95": [
+              0.7059,
+              1.0
+            ]
+          },
+          "n": 47,
+          "brier": 0.1292
+        }
+      },
+      "repeat_clip_auc": [
+        0.8535,
+        0.8163,
+        0.8403,
+        0.8326,
+        0.8429
+      ],
+      "repeat_person_auc": [
+        0.9273,
+        0.8964,
+        0.92,
+        0.9273,
+        0.92
+      ],
+      "thresholds": {
+        "pd_high": 0.72,
+        "hc_high": 0.42,
+        "method": "fixed (not derived from data)"
+      }
+    }
+  },
+  "disclaimer": "This tool is a research screening support system only. It is NOT a medical diagnosis. Final decisions must be made by qualified clinicians.",
   "app_default_model": "random_forest"
 }
