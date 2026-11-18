@@ -19,7 +19,7 @@ from src.assistant.policy import (
     Quota,
     trim_history,
 )
-from src.assistant.prompt import system_prompt
+from src.assistant.prompt import load_knowledge, system_prompt
 from src.assistant.service import submit_message
 
 
@@ -76,6 +76,26 @@ def test_system_prompt_keeps_guardrails() -> None:
     assert "no tools" in prompt
     assert "trained only on Italian" in prompt
     assert "0.90" in prompt
+
+
+def test_knowledge_covers_italian_english_and_bangla_models() -> None:
+    text = load_knowledge()
+    assert "186" in text and "61" in text
+    assert "Italian" in text
+    assert "195" in text and "32" in text
+    assert "UCI" in text
+    assert "900" in text and "120" in text
+    assert "BenSParX" in text
+    assert "Feature lab" in text
+    assert "secondary" in text.lower()
+    assert "does not swap" in text.lower() or "do not replace the live decision" in text.lower()
+    for question in (
+        "Was it trained on English or Bangla speech?",
+        "Which model is used when I record?",
+        "What does English or Bangla mode change?",
+        "What do the UCI and BenSParX models score?",
+    ):
+        assert question in text
 
 
 def test_on_topic_answer_uses_chat_completions(fake_http: None) -> None:

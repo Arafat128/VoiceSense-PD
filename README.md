@@ -10,7 +10,7 @@ Premium research app for **voice-based Parkinson’s disease (PD) screening** wi
 
 > **Not a medical diagnosis.** Screening support / research only.
 
-The live model is trained **only on Italian recordings** (public Italian Parkinson’s Voice). English and Bangla on the live screen are interface modes. They do not mean the live model heard English or Bangla speech. The UCI and BenSParX models are separate feature-table checks.
+Three model families are included. The **live** model, used when you record, was trained only on Italian recordings (public Italian Parkinson’s Voice: 186 recordings, 61 subjects). **English** is the separate UCI Parkinson’s feature-table model (195 recordings, 32 subjects). **Bangla** is the separate BenSParX feature-table model (900 recordings, 120 subjects). English and Bangla mode on the live screen do not swap the primary model. They highlight the matching feature-table score, which stays a secondary check.
 
 ## Quick start
 
@@ -58,13 +58,15 @@ python -m training.train_audio --data-dir /path/to/datasets
 
 `training/` is offline. The Streamlit app does not import it.
 
-## Live model numbers
+## Models
 
-The default live model is the Italian random forest (`live_audio_italian__random_forest.joblib`).
+Figures below are the subject-aware numbers in `reports/`. A small hold-out is not the same claim as cross-validation.
 
-Subject-aware **5-fold CV F1 is about 0.90 ± 0.08** (0.899 ± 0.081). That is the stability estimate.
+**Live acoustic model** (`live_audio_italian__random_forest.joblib`, with an SVM second check). Italian Parkinson’s Voice, 186 recordings, 61 subjects (77 Parkinson’s, 109 healthy). Praat jitter, shimmer, HNR, pitch, and loudness (33 features, no MFCCs). Language-independent measures, still sensitive to microphone and channel. Random-forest 5-fold CV F1 **0.899 ± 0.081** (about 0.90 ± 0.08). Hold-out: 34 clips, 12 subjects, accuracy 0.971, F1 0.963, ROC-AUC 0.993. SVM on that split: CV F1 0.915 ± 0.046, hold-out F1 0.833.
 
-The hold-out is small: **34 clips from 12 subjects**, accuracy 0.971, F1 0.963, ROC-AUC 0.993. A number that high on 34 clips is not the same claim as the cross-validation. Read the CV figure next to it. The SVM hold-out F1 on the same split is 0.833.
+**English UCI model.** 195 recordings, 32 subjects (147 Parkinson’s, 48 healthy), 22 published dysphonia features. Used in Feature lab and as a secondary score after a live recording. It does not make the live decision. Random forest hold-out (43 recordings, 7 subjects): accuracy 0.721, F1 0.806, ROC-AUC 0.754, CV F1 0.839 ± 0.067. SVM hold-out F1 0.896, CV F1 0.862 ± 0.047.
+
+**Bengali BenSParX model.** 900 recordings, 120 subjects (450 Parkinson’s, 450 healthy), 71 features including MFCCs. Used in Feature lab and as a partial secondary score after a live recording. Random forest hold-out (177 recordings, 24 subjects): accuracy 0.938, F1 0.937, ROC-AUC 0.987, CV F1 0.931 ± 0.025. SVM hold-out F1 0.930, CV F1 0.932 ± 0.020.
 
 ## Privacy (on-device screening)
 

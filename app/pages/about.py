@@ -10,8 +10,10 @@ def render_about() -> None:
         <div class="vs-card">
           <h3>Method highlights</h3>
           <p class="vs-muted">
-            English UCI &amp; Bengali BenSParX feature models · Live acoustic model trained with the
-            same Praat/librosa extractor used at inference · subject/speaker-aware validation.
+            Recording uses the Italian-trained live model as the primary score.
+            English and Bangla mode do not swap that model. They highlight the matching
+            UCI English or BenSParX Bengali feature-table score, which is supportive only.
+            Those table models are also what Feature lab scores.
             A live call is shown only when the clip is at least 4 seconds, clean enough to trust
             pitch and loudness, and the random-forest and SVM checks agree. Three separate vowels
             are read together. One home-microphone clip is not treated as a final answer.
