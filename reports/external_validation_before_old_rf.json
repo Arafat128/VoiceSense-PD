@@ -1,0 +1,310 @@
+{
+  "tag": "before_old_rf",
+  "disclaimer": "This tool is a research screening support system only. It is NOT a medical diagnosis. Final decisions must be made by qualified clinicians.",
+  "models": {
+    "random_forest (old_rf.joblib)": {
+      "trained_on": [
+        "italian"
+      ],
+      "targets": {
+        "uams": {
+          "dataset": {
+            "clips": 81,
+            "speakers": 81,
+            "pd_speakers": 40,
+            "hc_speakers": 41,
+            "pd_clips": 40,
+            "hc_clips": 41,
+            "mean_age_pd": 67.0,
+            "mean_age_hc": 47.7
+          },
+          "metrics": {
+            "clip": {
+              "auc": {
+                "value": 0.4463,
+                "ci95": [
+                  0.3274,
+                  0.5673
+                ]
+              },
+              "balanced_accuracy": {
+                "value": 0.4707,
+                "ci95": [
+                  0.3696,
+                  0.5769
+                ]
+              },
+              "sensitivity": {
+                "value": 0.6,
+                "ci95": [
+                  0.4524,
+                  0.75
+                ]
+              },
+              "specificity": {
+                "value": 0.3415,
+                "ci95": [
+                  0.2075,
+                  0.4889
+                ]
+              },
+              "n": 81,
+              "brier": 0.2704
+            },
+            "person": {
+              "auc": {
+                "value": 0.4463,
+                "ci95": [
+                  0.3274,
+                  0.5673
+                ]
+              },
+              "balanced_accuracy": {
+                "value": 0.4707,
+                "ci95": [
+                  0.3696,
+                  0.5769
+                ]
+              },
+              "sensitivity": {
+                "value": 0.6,
+                "ci95": [
+                  0.4524,
+                  0.75
+                ]
+              },
+              "specificity": {
+                "value": 0.3415,
+                "ci95": [
+                  0.2075,
+                  0.4889
+                ]
+              },
+              "n": 81,
+              "brier": 0.2704
+            }
+          },
+          "band_shares_at_saved_cutoffs": {
+            "healthy": {
+              "likely": 0.0,
+              "uncertain": 0.7805,
+              "unlikely": 0.2195
+            },
+            "parkinsons": {
+              "likely": 0.0,
+              "uncertain": 0.8,
+              "unlikely": 0.2
+            }
+          },
+          "cutoffs": {
+            "pd_high": 0.72,
+            "hc_high": 0.42
+          },
+          "mean_prob": {
+            "healthy": 0.4699,
+            "parkinsons": 0.4741
+          },
+          "app_would_make_a_call_share": 0.0988,
+          "age_matched_hc_ge_50": {
+            "dataset": {
+              "clips": 58,
+              "speakers": 58,
+              "pd_speakers": 40,
+              "hc_speakers": 18,
+              "pd_clips": 40,
+              "hc_clips": 18,
+              "mean_age_pd": 67.0,
+              "mean_age_hc": 60.5
+            },
+            "metrics": {
+              "clip": {
+                "auc": {
+                  "value": 0.5042,
+                  "ci95": [
+                    0.3297,
+                    0.675
+                  ]
+                },
+                "balanced_accuracy": {
+                  "value": 0.4944,
+                  "ci95": [
+                    0.3618,
+                    0.6307
+                  ]
+                },
+                "sensitivity": {
+                  "value": 0.6,
+                  "ci95": [
+                    0.4499,
+                    0.7436
+                  ]
+                },
+                "specificity": {
+                  "value": 0.3889,
+                  "ci95": [
+                    0.1737,
+                    0.6156
+                  ]
+                },
+                "n": 58,
+                "brier": 0.2728
+              },
+              "person": {
+                "auc": {
+                  "value": 0.5042,
+                  "ci95": [
+                    0.3297,
+                    0.675
+                  ]
+                },
+                "balanced_accuracy": {
+                  "value": 0.4944,
+                  "ci95": [
+                    0.3618,
+                    0.6307
+                  ]
+                },
+                "sensitivity": {
+                  "value": 0.6,
+                  "ci95": [
+                    0.4499,
+                    0.7436
+                  ]
+                },
+                "specificity": {
+                  "value": 0.3889,
+                  "ci95": [
+                    0.1737,
+                    0.6156
+                  ]
+                },
+                "n": 58,
+                "brier": 0.2728
+              }
+            },
+            "band_shares_at_saved_cutoffs": {
+              "healthy": {
+                "likely": 0.0,
+                "uncertain": 0.7222,
+                "unlikely": 0.2778
+              },
+              "parkinsons": {
+                "likely": 0.0,
+                "uncertain": 0.8,
+                "unlikely": 0.2
+              }
+            },
+            "cutoffs": {
+              "pd_high": 0.72,
+              "hc_high": 0.42
+            },
+            "mean_prob": {
+              "healthy": 0.4465,
+              "parkinsons": 0.4741
+            },
+            "app_would_make_a_call_share": 0.1379
+          }
+        },
+        "argentina": {
+          "dataset": {
+            "clips": 126,
+            "speakers": 126,
+            "pd_speakers": 55,
+            "hc_speakers": 71,
+            "pd_clips": 55,
+            "hc_clips": 71,
+            "mean_age_pd": 64.1,
+            "mean_age_hc": null
+          },
+          "metrics": {
+            "clip": {
+              "auc": {
+                "value": 0.4143,
+                "ci95": [
+                  0.309,
+                  0.5219
+                ]
+              },
+              "balanced_accuracy": {
+                "value": 0.4232,
+                "ci95": [
+                  0.3681,
+                  0.4745
+                ]
+              },
+              "sensitivity": {
+                "value": 0.8182,
+                "ci95": [
+                  0.7143,
+                  0.9139
+                ]
+              },
+              "specificity": {
+                "value": 0.0282,
+                "ci95": [
+                  0.0,
+                  0.0695
+                ]
+              },
+              "n": 126,
+              "brier": 0.304
+            },
+            "person": {
+              "auc": {
+                "value": 0.4143,
+                "ci95": [
+                  0.309,
+                  0.5219
+                ]
+              },
+              "balanced_accuracy": {
+                "value": 0.4232,
+                "ci95": [
+                  0.3681,
+                  0.4745
+                ]
+              },
+              "sensitivity": {
+                "value": 0.8182,
+                "ci95": [
+                  0.7143,
+                  0.9139
+                ]
+              },
+              "specificity": {
+                "value": 0.0282,
+                "ci95": [
+                  0.0,
+                  0.0695
+                ]
+              },
+              "n": 126,
+              "brier": 0.304
+            }
+          },
+          "band_shares_at_saved_cutoffs": {
+            "healthy": {
+              "likely": 0.0,
+              "uncertain": 0.9859,
+              "unlikely": 0.0141
+            },
+            "parkinsons": {
+              "likely": 0.0,
+              "uncertain": 0.8364,
+              "unlikely": 0.1636
+            }
+          },
+          "cutoffs": {
+            "pd_high": 0.72,
+            "hc_high": 0.42
+          },
+          "mean_prob": {
+            "healthy": 0.5887,
+            "parkinsons": 0.5277
+          },
+          "app_would_make_a_call_share": 0.0714
+        }
+      }
+    }
+  }
+}
