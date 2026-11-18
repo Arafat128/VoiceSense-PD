@@ -72,6 +72,18 @@ def _add_engineered(feat_dict: dict[str, float]) -> dict[str, float]:
     return add_engineered(feat_dict)
 
 
+# Only for artifacts trained before thresholds were derived from data.
+LEGACY_THRESHOLDS = {"pd_high": 0.72, "hc_high": 0.42}
+
+
+def thresholds_for(pack: dict[str, Any]) -> dict[str, float]:
+    """Likely / Unlikely cut-offs saved in the model metadata at training time."""
+    saved = pack.get("decision_thresholds") or {}
+    if "pd_high" in saved and "hc_high" in saved:
+        return {"pd_high": float(saved["pd_high"]), "hc_high": float(saved["hc_high"])}
+    return dict(LEGACY_THRESHOLDS)
+
+
 def _decide_from_proba(proba: float, thresholds: dict[str, float]) -> dict[str, Any]:
     """
     Conservative decision for consumer mics:
@@ -79,8 +91,8 @@ def _decide_from_proba(proba: float, thresholds: dict[str, float]) -> dict[str, 
     - low p => Healthy
     - middle => Uncertain (do NOT scare users with weak PD flags)
     """
-    thr_pd = float(thresholds.get("pd_high", 0.72))
-    thr_hc = float(thresholds.get("hc_high", 0.42))
+    thr_pd = float(thresholds["pd_high"])
+    thr_hc = float(thresholds["hc_high"])
     if proba >= thr_pd:
         return {
             "pred_label": 1,
@@ -217,7 +229,7 @@ def _predict_with_pack(
     frame = pd.DataFrame([vec], columns=names)
     pipe = pack["pipeline"]
     proba = float(pipe.predict_proba(frame)[0, 1])
-    thresholds = pack.get("decision_thresholds") or {"pd_high": 0.72, "hc_high": 0.42}
+    thresholds = thresholds_for(pack)
     decision = _decide_from_proba(proba, thresholds)
     explanation = None
     if explain:
@@ -232,8 +244,9 @@ def _predict_with_pack(
                 f"Screening decision: {decision['prediction']}",
                 f"Model probability of PD: {proba:.1%}",
                 (
-                    f"PD is only flagged when probability ≥ {thresholds.get('pd_high', 0.72):.0%}; "
-                    f"healthy when ≤ {thresholds.get('hc_high', 0.42):.0%}."
+                    f"PD is only flagged when probability ≥ {thresholds['pd_high']:.0%}; "
+                    f"healthy when ≤ {thresholds['hc_high']:.0%} "
+                    "(cut-offs chosen from validation data)."
                 ),
                 "Your score is in the middle band — this often happens with short clips, new microphones, or normal voice variation.",
                 "This is NOT a diagnosis. If you have concerns, consult a clinician.",
@@ -346,7 +359,7 @@ def predict_from_audio(
             if comp >= 0.7:
                 frame = pd.DataFrame([vec], columns=uci_names)
                 proba = float(uci_pack["pipeline"].predict_proba(frame)[0, 1])
-                thr = live_pack.get("decision_thresholds") or {"pd_high": 0.72, "hc_high": 0.42}
+                thr = thresholds_for(live_pack)
                 dec = _decide_from_proba(proba, thr)
                 secondary["english_uci"] = {
                     "prediction": dec["prediction"] + " [secondary]",
@@ -370,7 +383,7 @@ def predict_from_audio(
             if comp >= 0.25:
                 frame = pd.DataFrame([vec], columns=bn_names)
                 proba = float(bn_pack["pipeline"].predict_proba(frame)[0, 1])
-                thr = live_pack.get("decision_thresholds") or {"pd_high": 0.72, "hc_high": 0.42}
+                thr = thresholds_for(live_pack)
                 dec = _decide_from_proba(proba, thr)
                 secondary["bengali_bensparx"] = {
                     "prediction": dec["prediction"] + " [secondary]",

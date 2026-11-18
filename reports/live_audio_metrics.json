@@ -8,8 +8,8 @@
     "min_hc_age": null,
     "italian_task": "vowels",
     "augment_copies": 0,
-    "grouped_calibration": false,
-    "data_thresholds": false,
+    "grouped_calibration": true,
+    "data_thresholds": true,
     "repeats": 5,
     "speaker_weighting": "each speaker weighs 1 regardless of clip count"
   },
@@ -67,30 +67,30 @@
     "random_forest": {
       "metrics": {
         "protocol": "speaker-grouped stratified 5-fold CV, repeated 5x; 95% CI = 1000x speaker bootstrap",
-        "clip_auc": 0.9024,
+        "clip_auc": 0.8946,
         "clip_auc_ci95": [
-          0.8433,
-          0.9504
+          0.8321,
+          0.9454
         ],
-        "clip_balanced_accuracy": 0.8205,
+        "clip_balanced_accuracy": 0.82,
         "clip_balanced_accuracy_ci95": [
-          0.7609,
-          0.8759
+          0.7579,
+          0.8804
         ],
-        "clip_sensitivity": 0.8,
+        "clip_sensitivity": 0.8218,
         "clip_sensitivity_ci95": [
-          0.7222,
-          0.872
+          0.7423,
+          0.8963
         ],
-        "clip_specificity": 0.8409,
+        "clip_specificity": 0.8182,
         "clip_specificity_ci95": [
-          0.7429,
-          0.9222
+          0.7174,
+          0.9111
         ],
         "clip_n": 495,
-        "person_auc": 0.9782,
+        "person_auc": 0.9691,
         "person_auc_ci95": [
-          0.9236,
+          0.9117,
           1.0
         ],
         "person_balanced_accuracy": 0.9118,
@@ -109,47 +109,47 @@
           1.0
         ],
         "person_n": 47,
-        "clip_auc_repeat_mean": 0.89592,
-        "clip_auc_repeat_sd": 0.007956230263133418
+        "clip_auc_repeat_mean": 0.88846,
+        "clip_auc_repeat_sd": 0.009486537829998887
       },
       "cv": {
         "clip": {
           "auc": {
-            "value": 0.9024,
+            "value": 0.8946,
             "ci95": [
-              0.8433,
-              0.9504
+              0.8321,
+              0.9454
             ]
           },
           "balanced_accuracy": {
-            "value": 0.8205,
+            "value": 0.82,
             "ci95": [
-              0.7609,
-              0.8759
+              0.7579,
+              0.8804
             ]
           },
           "sensitivity": {
-            "value": 0.8,
+            "value": 0.8218,
             "ci95": [
-              0.7222,
-              0.872
+              0.7423,
+              0.8963
             ]
           },
           "specificity": {
-            "value": 0.8409,
+            "value": 0.8182,
             "ci95": [
-              0.7429,
-              0.9222
+              0.7174,
+              0.9111
             ]
           },
           "n": 495,
-          "brier": 0.1274
+          "brier": 0.141
         },
         "person": {
           "auc": {
-            "value": 0.9782,
+            "value": 0.9691,
             "ci95": [
-              0.9236,
+              0.9117,
               1.0
             ]
           },
@@ -175,67 +175,79 @@
             ]
           },
           "n": 47,
-          "brier": 0.0986
+          "brier": 0.124
         }
       },
       "repeat_clip_auc": [
-        0.9012,
-        0.8916,
-        0.9069,
-        0.8837,
-        0.8962
+        0.8987,
+        0.8767,
+        0.8991,
+        0.8788,
+        0.889
       ],
       "repeat_person_auc": [
-        0.9782,
-        0.9691,
-        0.9818,
-        0.9691,
-        0.98
+        0.9709,
+        0.96,
+        0.9745,
+        0.9564,
+        0.9691
       ],
       "thresholds": {
-        "pd_high": 0.72,
-        "hc_high": 0.42,
-        "method": "fixed (not derived from data)"
+        "pd_high": 0.577,
+        "hc_high": 0.3736,
+        "method": "From speaker-grouped out-of-fold calibrated clip probabilities: pd_high is the 90% quantile of healthy clips, hc_high is the 10% quantile of Parkinson's clips; uncertain band between the two cut-offs.",
+        "observed": {
+          "healthy_clips": {
+            "unlikely": 0.65,
+            "uncertain": 0.25,
+            "likely": 0.1
+          },
+          "pd_clips": {
+            "unlikely": 0.1018,
+            "uncertain": 0.1709,
+            "likely": 0.7273
+          }
+        }
       }
     },
     "svm_rbf": {
       "metrics": {
         "protocol": "speaker-grouped stratified 5-fold CV, repeated 5x; 95% CI = 1000x speaker bootstrap",
-        "clip_auc": 0.8388,
+        "clip_auc": 0.8292,
         "clip_auc_ci95": [
-          0.7675,
-          0.9011
+          0.76,
+          0.8895
         ],
-        "clip_balanced_accuracy": 0.7645,
+        "clip_balanced_accuracy": 0.7545,
         "clip_balanced_accuracy_ci95": [
-          0.6968,
-          0.8306
+          0.6929,
+          0.8127
         ],
-        "clip_sensitivity": 0.7745,
+        "clip_sensitivity": 0.7455,
         "clip_sensitivity_ci95": [
-          0.6851,
-          0.8634
+          0.6545,
+          0.8296
         ],
-        "clip_specificity": 0.7545,
+        "clip_specificity": 0.7636,
         "clip_specificity_ci95": [
-          0.65,
-          0.8571
+          0.6749,
+          0.8539
         ],
         "clip_n": 495,
-        "person_auc": 0.92,
+        "person_auc": 0.9218,
         "person_auc_ci95": [
-          0.8279,
-          0.9855
+          0.8308,
+          0.9873
         ],
-        "person_balanced_accuracy": 0.8718,
+        "person_balanced_accuracy": 0.8518,
         "person_balanced_accuracy_ci95": [
-          0.7756,
-          0.96
+          0.7528,
+          0.9375
         ],
-        "person_sensitivity": 0.88,
+        "person_sensitivity": 0.84,
         "person_sensitivity_ci95": [
-          0.75,
-          1.0
+          0.6957,
+          0.9615
         ],
         "person_specificity": 0.8636,
         "person_specificity_ci95": [
@@ -243,62 +255,62 @@
           1.0
         ],
         "person_n": 47,
-        "clip_auc_repeat_mean": 0.83712,
-        "clip_auc_repeat_sd": 0.01237520100846851
+        "clip_auc_repeat_mean": 0.826,
+        "clip_auc_repeat_sd": 0.013382077566656088
       },
       "cv": {
         "clip": {
           "auc": {
-            "value": 0.8388,
+            "value": 0.8292,
             "ci95": [
-              0.7675,
-              0.9011
+              0.76,
+              0.8895
             ]
           },
           "balanced_accuracy": {
-            "value": 0.7645,
+            "value": 0.7545,
             "ci95": [
-              0.6968,
-              0.8306
+              0.6929,
+              0.8127
             ]
           },
           "sensitivity": {
-            "value": 0.7745,
+            "value": 0.7455,
             "ci95": [
-              0.6851,
-              0.8634
+              0.6545,
+              0.8296
             ]
           },
           "specificity": {
-            "value": 0.7545,
+            "value": 0.7636,
             "ci95": [
-              0.65,
-              0.8571
+              0.6749,
+              0.8539
             ]
           },
           "n": 495,
-          "brier": 0.162
+          "brier": 0.1744
         },
         "person": {
           "auc": {
-            "value": 0.92,
+            "value": 0.9218,
             "ci95": [
-              0.8279,
-              0.9855
+              0.8308,
+              0.9873
             ]
           },
           "balanced_accuracy": {
-            "value": 0.8718,
+            "value": 0.8518,
             "ci95": [
-              0.7756,
-              0.96
+              0.7528,
+              0.9375
             ]
           },
           "sensitivity": {
-            "value": 0.88,
+            "value": 0.84,
             "ci95": [
-              0.75,
-              1.0
+              0.6957,
+              0.9615
             ]
           },
           "specificity": {
@@ -309,27 +321,39 @@
             ]
           },
           "n": 47,
-          "brier": 0.1292
+          "brier": 0.1601
         }
       },
       "repeat_clip_auc": [
-        0.8535,
-        0.8163,
-        0.8403,
-        0.8326,
-        0.8429
+        0.8465,
+        0.8043,
+        0.8252,
+        0.8279,
+        0.8261
       ],
       "repeat_person_auc": [
-        0.9273,
-        0.8964,
-        0.92,
-        0.9273,
-        0.92
+        0.9145,
+        0.8891,
+        0.9145,
+        0.9236,
+        0.9145
       ],
       "thresholds": {
-        "pd_high": 0.72,
-        "hc_high": 0.42,
-        "method": "fixed (not derived from data)"
+        "pd_high": 0.6102,
+        "hc_high": 0.3549,
+        "method": "From speaker-grouped out-of-fold calibrated clip probabilities: pd_high is the 90% quantile of healthy clips, hc_high is the 10% quantile of Parkinson's clips; uncertain band between the two cut-offs.",
+        "observed": {
+          "healthy_clips": {
+            "unlikely": 0.45,
+            "uncertain": 0.45,
+            "likely": 0.1
+          },
+          "pd_clips": {
+            "unlikely": 0.1018,
+            "uncertain": 0.3236,
+            "likely": 0.5745
+          }
+        }
       }
     }
   },

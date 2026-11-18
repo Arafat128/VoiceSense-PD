@@ -29,7 +29,7 @@ from training.vowel_data import describe, load_manifest
 # Config flag: young healthy controls are an age confound, so they are off.
 INCLUDE_YOUNG_HC = False
 
-# Fixed cut-offs used until thresholds are derived from data.
+# Old fixed cut-offs, kept only for --fixed-thresholds comparisons.
 DECISION_THRESHOLDS = {"pd_high": 0.72, "hc_high": 0.42}
 
 MODEL_NAMES = ("random_forest", "svm_rbf")
@@ -94,8 +94,8 @@ def train_live_audio_model(
     italian_task: str = "vowels",
     repeats: int = 5,
     augment: int = 0,
-    calibrate: bool = False,
-    derive: bool = False,
+    calibrate: bool = True,
+    derive: bool = True,
     save: bool = True,
     report_name: str = "live_audio_metrics.json",
 ) -> dict[str, Any]:
@@ -229,6 +229,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--italian-task", choices=("vowels", "connected"), default="vowels",
                         help="vowels = VA..VU (default). connected = old reading-task baseline.")
     parser.add_argument("--repeats", type=int, default=5, help="Repeats of speaker-grouped 5-fold CV.")
+    parser.add_argument("--no-calibration", action="store_true",
+                        help="Skip speaker-grouped sigmoid calibration (for comparison only).")
+    parser.add_argument("--fixed-thresholds", action="store_true",
+                        help="Keep the old 0.72/0.42 cut-offs instead of deriving them from data.")
     parser.add_argument("--report-only", metavar="NAME",
                         help="Write reports/NAME and do not replace the shipped models.")
     args = parser.parse_args(argv)
@@ -237,6 +241,8 @@ def main(argv: list[str] | None = None) -> None:
         include_young_hc=args.include_young_hc,
         italian_task=args.italian_task,
         repeats=args.repeats,
+        calibrate=not args.no_calibration,
+        derive=not args.fixed_thresholds,
         save=not args.report_only,
         report_name=args.report_only or "live_audio_metrics.json",
     )
