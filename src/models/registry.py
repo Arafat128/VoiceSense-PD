@@ -75,24 +75,33 @@ def load_holdout_samples(dataset_key: str) -> pd.DataFrame:
     return _read_holdout(dataset_key).copy()
 
 
+LIVE_DATASET_KEYS = ("live_audio_vowel", "live_audio_italian")
+
+
 def live_model_path(model_name: str | None = None) -> Path:
-    """Fixed filename under models/. Does not follow stored absolute paths."""
+    """Fixed filename under models/. Does not follow stored absolute paths.
+
+    The pointer names the default model and the dataset key of the live
+    artifacts (live_audio_vowel for the multi-corpus model). Older pointers
+    without a key fall back to whichever live artifacts exist.
+    """
     name = model_name
-    if not name:
-        pointer = MODELS_DIR / "live_audio_default.joblib"
-        if pointer.exists():
-            packed = read_joblib(pointer)
-            name = str(packed.get("default_model") or "random_forest")
-        else:
-            name = "random_forest"
-    path = MODELS_DIR / f"live_audio_italian__{name}.joblib"
-    if not path.exists():
-        raise FileNotFoundError(
-            f"Live audio model not found: {path}. "
-            "Expected live_audio_italian__random_forest.joblib. "
-            "Run: python -m training.train_audio"
-        )
-    return path
+    key = None
+    pointer = MODELS_DIR / "live_audio_default.joblib"
+    if pointer.exists():
+        packed = read_joblib(pointer)
+        name = name or str(packed.get("default_model") or "random_forest")
+        key = packed.get("dataset_key")
+    name = name or "random_forest"
+    keys = [key] if key else list(LIVE_DATASET_KEYS)
+    for candidate in keys:
+        path = MODELS_DIR / f"{candidate}__{name}.joblib"
+        if path.exists():
+            return path
+    raise FileNotFoundError(
+        f"Live audio model '{name}' not found in {MODELS_DIR}. "
+        "Run: python -m training.train_audio --data-dir <dataset root>"
+    )
 
 
 def load_live_audio_model(model_name: str | None = None) -> dict[str, Any]:

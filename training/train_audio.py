@@ -21,6 +21,7 @@ from typing import Any
 import joblib
 import numpy as np
 
+from src.config import VOWEL_DATASETS
 from training.common import DISCLAIMER, MODELS_DIR, REPORTS_DIR, resolve_data_dir
 from training.evaluate import bootstrap_ci, derive_thresholds, fit_final, repeated_grouped_oof
 from training.featurize import CLINICAL_FEATURES, build_features
@@ -33,6 +34,13 @@ INCLUDE_YOUNG_HC = False
 DECISION_THRESHOLDS = {"pd_high": 0.72, "hc_high": 0.42}
 
 MODEL_NAMES = ("random_forest", "svm_rbf")
+
+# All three public vowel corpora. Leave-one-dataset-out showed that adding
+# corpora raises the score on a corpus the model never saw (reports/).
+DEFAULT_DATASETS = ("italian", "uams", "argentina")
+# Same age rule as dropping young controls: where ages are known (UAMS),
+# healthy speakers under 50 are left out.
+MIN_HC_AGE = 50.0
 PROTOCOL = "speaker-grouped stratified 5-fold CV, repeated {repeats}x; 95% CI = 1000x speaker bootstrap"
 
 
@@ -59,6 +67,26 @@ def load_table(data_dir, datasets, *, include_young_hc, min_hc_age, italian_task
     if bad.any():
         print(f"[warn] {int(bad.sum())} clip variants failed extraction and are skipped")
     return manifest, table[~bad].reset_index(drop=True), variants
+
+
+def _display_name(datasets) -> str:
+    if tuple(datasets) == ("italian",):
+        return "Live vowel model (Italian sustained vowels)"
+    names = {"italian": "Italian", "uams": "UAMS", "argentina": "Argentina"}
+    return "Live vowel model (" + " + ".join(names.get(d, d) for d in datasets) + " vowels)"
+
+
+def leave_one_dataset_out(table, features, name, variants, datasets, calibrate) -> dict:
+    """Train on all corpora but one, test on the held-out corpus (true external test)."""
+    out = {}
+    for held in datasets:
+        train = table[table["dataset"] != held]
+        test = table[(table["dataset"] == held) & (table["variant"] == "clean")].copy()
+        pipe = fit_final(name, train, features, train_variants=variants, calibrate=calibrate)
+        test["prob"] = pipe.predict_proba(test[features])[:, 1]
+        out[held] = bootstrap_ci(test, n_boot=500)
+    out["mean_person_auc"] = round(float(np.mean([out[d]["person"]["auc"]["value"] for d in datasets])), 4)
+    return out
 
 
 def evaluate_config(table, variants, *, repeats, calibrate, derive, features=None) -> dict:
@@ -88,9 +116,9 @@ def evaluate_config(table, variants, *, repeats, calibrate, derive, features=Non
 def train_live_audio_model(
     data_dir,
     *,
-    datasets: tuple[str, ...] = ("italian",),
+    datasets: tuple[str, ...] = DEFAULT_DATASETS,
     include_young_hc: bool = INCLUDE_YOUNG_HC,
-    min_hc_age: float | None = None,
+    min_hc_age: float | None = MIN_HC_AGE,
     italian_task: str = "vowels",
     repeats: int = 5,
     augment: int = 2,
@@ -128,9 +156,16 @@ def train_live_audio_model(
     }
     evals = evaluate_config(table, variants, repeats=repeats, calibrate=calibrate, derive=derive)
     clean = table[table["variant"] == "clean"]
+    dataset_key = "live_audio_italian" if tuple(datasets) == ("italian",) else "live_audio_vowel"
     for name in MODEL_NAMES:
         block = evals[name]["block"]
         flat = _flat_metrics(block["cv"], block["repeat_clip_auc"], protocol)
+        if len(datasets) > 1:
+            block["lodo"] = leave_one_dataset_out(table, features, name, variants, datasets, calibrate)
+            flat["lodo_person_auc"] = {d: block["lodo"][d]["person"]["auc"]["value"] for d in datasets}
+            flat["lodo_person_auc_ci95"] = {d: block["lodo"][d]["person"]["auc"]["ci95"] for d in datasets}
+            flat["lodo_mean_person_auc"] = block["lodo"]["mean_person_auc"]
+            print(f"  {name}: leave-one-dataset-out person AUC {flat['lodo_person_auc']}")
         results["models"][name] = {"metrics": flat, **block}
         print(f"  {name}: person AUC {flat['person_auc']:.3f} {flat['person_auc_ci95']}  "
               f"clip AUC {flat['clip_auc']:.3f} {flat['clip_auc_ci95']}")
@@ -141,9 +176,19 @@ def train_live_audio_model(
             thresholds = {k: block["thresholds"][k] for k in ("pd_high", "hc_high")}
             _save(name, pipe, X, y, features, flat, thresholds, config,
                   extra={"threshold_method": block["thresholds"].get("method"),
-                         "threshold_observed": block["thresholds"].get("observed")})
+                         "threshold_observed": block["thresholds"].get("observed"),
+                         "dataset_key": dataset_key,
+                         "display_name": _display_name(datasets),
+                         "language": "Language-independent sustained vowel ("
+                                     + ", ".join(VOWEL_DATASETS[d]["language"] for d in datasets) + " speakers)"})
+    if len(datasets) > 1:
+        default = max(MODEL_NAMES, key=lambda n: results["models"][n]["metrics"]["lodo_mean_person_auc"])
+        results["default_model_rule"] = "highest mean leave-one-dataset-out person AUC"
+    else:
+        default = "random_forest"
     if save:
-        _write_pointer_and_report(results, features, report_name=report_name)
+        _write_pointer_and_report(results, features, dataset_key=dataset_key, report_name=report_name,
+                                  default=default)
     else:
         REPORTS_DIR.mkdir(parents=True, exist_ok=True)
         with open(REPORTS_DIR / report_name, "w", encoding="utf-8") as f:
@@ -206,10 +251,13 @@ def _save(name, pipe, X, y, features, metrics, thresholds, config, extra=None) -
 
 
 def _write_pointer_and_report(results: dict, features: list[str], dataset_key: str = "live_audio_italian",
-                              report_name: str = "live_audio_metrics.json") -> None:
-    default = "random_forest"
+                              report_name: str = "live_audio_metrics.json", default: str = "random_forest") -> None:
+    for stale in MODELS_DIR.glob("live_audio_*__*.joblib"):
+        if not stale.name.startswith(f"{dataset_key}__"):
+            stale.unlink()
     pointer = {
         "default_model": default,
+        "dataset_key": dataset_key,
         "artifact": f"{dataset_key}__{default}.joblib",
         "feature_names": features,
         "summary_metrics": results["models"][default]["metrics"],
@@ -224,6 +272,10 @@ def _write_pointer_and_report(results: dict, features: list[str], dataset_key: s
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Train the live sustained-vowel model.")
     parser.add_argument("--data-dir", default=None, help="Dataset root. Overrides VOICESENSE_DATA_DIR.")
+    parser.add_argument("--datasets", nargs="+", default=list(DEFAULT_DATASETS),
+                        choices=list(VOWEL_DATASETS), help="Vowel corpora to train on.")
+    parser.add_argument("--min-hc-age", type=float, default=MIN_HC_AGE,
+                        help="Drop healthy speakers younger than this where ages are known (UAMS). 0 = keep all.")
     parser.add_argument("--include-young-hc", action="store_true",
                         help="Add young healthy controls (age confound; off by default).")
     parser.add_argument("--italian-task", choices=("vowels", "connected"), default="vowels",
@@ -240,6 +292,8 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     train_live_audio_model(
         resolve_data_dir(args.data_dir),
+        datasets=tuple(args.datasets),
+        min_hc_age=args.min_hc_age or None,
         include_young_hc=args.include_young_hc,
         italian_task=args.italian_task,
         repeats=args.repeats,

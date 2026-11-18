@@ -20,8 +20,8 @@ def test_seven_joblib_artifacts_load() -> None:
         "english_uci__svm_rbf.joblib",
         "bengali_bensparx__random_forest.joblib",
         "bengali_bensparx__svm_rbf.joblib",
-        "live_audio_italian__random_forest.joblib",
-        "live_audio_italian__svm_rbf.joblib",
+        "live_audio_vowel__random_forest.joblib",
+        "live_audio_vowel__svm_rbf.joblib",
         "live_audio_default.joblib",
     }
     for path in paths:
@@ -39,8 +39,8 @@ def test_named_models_and_holdouts() -> None:
         ("english_uci", "svm_rbf"),
         ("bengali_bensparx", "random_forest"),
         ("bengali_bensparx", "svm_rbf"),
-        ("live_audio_italian", "random_forest"),
-        ("live_audio_italian", "svm_rbf"),
+        ("live_audio_vowel", "random_forest"),
+        ("live_audio_vowel", "svm_rbf"),
     ):
         pack = load_model(dataset_key, model_name)
         assert "pipeline" in pack
@@ -57,10 +57,11 @@ def test_named_models_and_holdouts() -> None:
 def test_live_pointer_uses_fixed_filename() -> None:
     pointer = read_joblib(MODELS_DIR / "live_audio_default.joblib")
     stored = str(pointer.get("artifact") or "")
-    assert "live_audio_italian__" in stored
+    assert stored.startswith(f"{pointer['dataset_key']}__")
     live = load_live_audio_model()
-    assert live["dataset_key"] == "live_audio_italian"
+    assert live["dataset_key"] == pointer["dataset_key"] == "live_audio_vowel"
+    assert set(live["training_config"]["datasets"]) == {"italian", "uams", "argentina"}
     assert live["model_name"] == pointer.get("default_model")
-    peer = load_live_audio_model("svm_rbf")
-    assert peer["model_name"] == "svm_rbf"
-    assert peer is load_live_audio_model("svm_rbf")
+    peer = load_live_audio_model("random_forest")
+    assert peer["model_name"] == "random_forest"
+    assert peer is load_live_audio_model("random_forest")

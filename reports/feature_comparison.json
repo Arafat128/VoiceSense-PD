@@ -1,0 +1,369 @@
+{
+  "datasets": {
+    "argentina": {
+      "clips": 126,
+      "speakers": 126,
+      "pd_speakers": 55,
+      "hc_speakers": 71,
+      "pd_clips": 55,
+      "hc_clips": 71,
+      "mean_age_pd": 64.1,
+      "mean_age_hc": null
+    },
+    "italian": {
+      "clips": 495,
+      "speakers": 47,
+      "pd_speakers": 25,
+      "hc_speakers": 22,
+      "pd_clips": 275,
+      "hc_clips": 220,
+      "mean_age_pd": null,
+      "mean_age_hc": null
+    },
+    "uams": {
+      "clips": 81,
+      "speakers": 81,
+      "pd_speakers": 40,
+      "hc_speakers": 41,
+      "pd_clips": 40,
+      "hc_clips": 41,
+      "mean_age_pd": 67.0,
+      "mean_age_hc": 47.7
+    }
+  },
+  "protocol": "Protocol: leave-one-dataset-out across the vowel corpora (train on the others,\ntest on the held-out corpus), plus the Italian <-> UAMS pair in both\ndirections. Person-level AUC with 95% speaker-bootstrap CIs.",
+  "lodo": {
+    "praat/logreg": {
+      "italian": {
+        "auc": 0.3345,
+        "ci95": [
+          0.1818,
+          0.5019
+        ]
+      },
+      "uams": {
+        "auc": 0.5207,
+        "ci95": [
+          0.3872,
+          0.6576
+        ]
+      },
+      "argentina": {
+        "auc": 0.5869,
+        "ci95": [
+          0.488,
+          0.6767
+        ]
+      },
+      "mean_auc": 0.4807
+    },
+    "praat/random_forest": {
+      "italian": {
+        "auc": 0.2564,
+        "ci95": [
+          0.1205,
+          0.4033
+        ]
+      },
+      "uams": {
+        "auc": 0.5555,
+        "ci95": [
+          0.4263,
+          0.6779
+        ]
+      },
+      "argentina": {
+        "auc": 0.4707,
+        "ci95": [
+          0.365,
+          0.5677
+        ]
+      },
+      "mean_auc": 0.4275
+    },
+    "praat/svm_rbf": {
+      "italian": {
+        "auc": 0.3564,
+        "ci95": [
+          0.188,
+          0.5318
+        ]
+      },
+      "uams": {
+        "auc": 0.5494,
+        "ci95": [
+          0.4251,
+          0.673
+        ]
+      },
+      "argentina": {
+        "auc": 0.623,
+        "ci95": [
+          0.515,
+          0.7106
+        ]
+      },
+      "mean_auc": 0.5096
+    },
+    "egemaps/logreg": {
+      "italian": {
+        "auc": 0.2182,
+        "ci95": [
+          0.0914,
+          0.376
+        ]
+      },
+      "uams": {
+        "auc": 0.4665,
+        "ci95": [
+          0.3289,
+          0.5903
+        ]
+      },
+      "argentina": {
+        "auc": 0.6003,
+        "ci95": [
+          0.496,
+          0.7047
+        ]
+      },
+      "mean_auc": 0.4283
+    },
+    "egemaps/random_forest": {
+      "italian": {
+        "auc": 0.38,
+        "ci95": [
+          0.2036,
+          0.5432
+        ]
+      },
+      "uams": {
+        "auc": 0.4939,
+        "ci95": [
+          0.3628,
+          0.6191
+        ]
+      },
+      "argentina": {
+        "auc": 0.623,
+        "ci95": [
+          0.529,
+          0.7134
+        ]
+      },
+      "mean_auc": 0.499
+    },
+    "egemaps/svm_rbf": {
+      "italian": {
+        "auc": 0.4091,
+        "ci95": [
+          0.2133,
+          0.6095
+        ]
+      },
+      "uams": {
+        "auc": 0.4543,
+        "ci95": [
+          0.3141,
+          0.5821
+        ]
+      },
+      "argentina": {
+        "auc": 0.6761,
+        "ci95": [
+          0.5841,
+          0.7773
+        ]
+      },
+      "mean_auc": 0.5132
+    },
+    "wavlm/logreg": {
+      "italian": {
+        "auc": 0.1927,
+        "ci95": [
+          0.0701,
+          0.343
+        ]
+      },
+      "uams": {
+        "auc": 0.4628,
+        "ci95": [
+          0.3265,
+          0.5868
+        ]
+      },
+      "argentina": {
+        "auc": 0.4689,
+        "ci95": [
+          0.3714,
+          0.5773
+        ]
+      },
+      "mean_auc": 0.3748
+    },
+    "wavlm/svm_rbf": {
+      "italian": {
+        "auc": 0.2236,
+        "ci95": [
+          0.1028,
+          0.3728
+        ]
+      },
+      "uams": {
+        "auc": 0.4939,
+        "ci95": [
+          0.3615,
+          0.6231
+        ]
+      },
+      "argentina": {
+        "auc": 0.5762,
+        "ci95": [
+          0.4836,
+          0.6817
+        ]
+      },
+      "mean_auc": 0.4312
+    }
+  },
+  "pairs": {
+    "praat/logreg": {
+      "italian->uams": {
+        "auc": 0.464,
+        "ci95": [
+          0.337,
+          0.5758
+        ]
+      },
+      "uams->italian": {
+        "auc": 0.2436,
+        "ci95": [
+          0.1058,
+          0.3837
+        ]
+      }
+    },
+    "praat/random_forest": {
+      "italian->uams": {
+        "auc": 0.3884,
+        "ci95": [
+          0.2684,
+          0.5136
+        ]
+      },
+      "uams->italian": {
+        "auc": 0.3982,
+        "ci95": [
+          0.2486,
+          0.5634
+        ]
+      }
+    },
+    "praat/svm_rbf": {
+      "italian->uams": {
+        "auc": 0.3793,
+        "ci95": [
+          0.2549,
+          0.5066
+        ]
+      },
+      "uams->italian": {
+        "auc": 0.24,
+        "ci95": [
+          0.1061,
+          0.3776
+        ]
+      }
+    },
+    "egemaps/logreg": {
+      "italian->uams": {
+        "auc": 0.3707,
+        "ci95": [
+          0.2356,
+          0.4969
+        ]
+      },
+      "uams->italian": {
+        "auc": 0.1291,
+        "ci95": [
+          0.0421,
+          0.2454
+        ]
+      }
+    },
+    "egemaps/random_forest": {
+      "italian->uams": {
+        "auc": 0.3073,
+        "ci95": [
+          0.1884,
+          0.4339
+        ]
+      },
+      "uams->italian": {
+        "auc": 0.0709,
+        "ci95": [
+          0.0037,
+          0.1688
+        ]
+      }
+    },
+    "egemaps/svm_rbf": {
+      "italian->uams": {
+        "auc": 0.3201,
+        "ci95": [
+          0.1994,
+          0.4401
+        ]
+      },
+      "uams->italian": {
+        "auc": 0.1255,
+        "ci95": [
+          0.036,
+          0.2419
+        ]
+      }
+    },
+    "wavlm/logreg": {
+      "italian->uams": {
+        "auc": 0.3085,
+        "ci95": [
+          0.1928,
+          0.4242
+        ]
+      },
+      "uams->italian": {
+        "auc": 0.1964,
+        "ci95": [
+          0.088,
+          0.3426
+        ]
+      }
+    },
+    "wavlm/svm_rbf": {
+      "italian->uams": {
+        "auc": 0.2213,
+        "ci95": [
+          0.1214,
+          0.332
+        ]
+      },
+      "uams->italian": {
+        "auc": 0.1091,
+        "ci95": [
+          0.025,
+          0.226
+        ]
+      }
+    }
+  },
+  "disclaimer": "This tool is a research screening support system only. It is NOT a medical diagnosis. Final decisions must be made by qualified clinicians.",
+  "verdict": {
+    "winner": "praat/svm_rbf",
+    "best_per_feature_set": {
+      "praat": "praat/svm_rbf",
+      "egemaps": "egemaps/svm_rbf",
+      "wavlm": "wavlm/svm_rbf"
+    },
+    "text": "Keep Praat (praat/svm_rbf, mean held-out AUC 0.510). No alternative cleared the rule (best alternatives: egemaps/svm_rbf 0.513, wavlm/svm_rbf 0.431)."
+  }
+}

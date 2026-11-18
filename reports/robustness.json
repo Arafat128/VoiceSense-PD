@@ -1,8 +1,10 @@
 {
   "datasets": [
-    "italian"
+    "italian",
+    "uams",
+    "argentina"
   ],
-  "model": "random_forest",
+  "model": "svm_rbf",
   "repeats": 2,
   "degradations": [
     "noise_snr20",
@@ -16,126 +18,126 @@
   "runs": {
     "without_augmentation": {
       "clean": {
-        "auc": 0.8910413223140495,
-        "balanced_accuracy": 0.8140909090909091,
-        "sensitivity": 0.8145454545454546,
-        "specificity": 0.8136363636363636,
-        "brier": 0.14223837644823828,
-        "n": 495
+        "auc": 0.6842386075395784,
+        "balanced_accuracy": 0.6170777573690195,
+        "sensitivity": 0.7810810810810811,
+        "specificity": 0.45307443365695793,
+        "brier": 0.22171927814075254,
+        "n": 679
       },
       "cutoffs": {
-        "pd_high": 0.5975,
-        "hc_high": 0.3813
+        "pd_high": 0.7095,
+        "hc_high": 0.4236
       },
       "degraded": {
         "noise_snr20": {
-          "mean_abs_change": 0.0832,
-          "band_flip_rate": 0.2485,
+          "mean_abs_change": 0.0467,
+          "band_flip_rate": 0.1708,
           "flip_to_likely_from_healthy_band": 0.0,
-          "clip_auc": 0.8788,
-          "n": 495
+          "clip_auc": 0.631,
+          "n": 679
         },
         "noise_snr10": {
-          "mean_abs_change": 0.1444,
-          "band_flip_rate": 0.396,
-          "flip_to_likely_from_healthy_band": 0.002,
-          "clip_auc": 0.8143,
-          "n": 495
+          "mean_abs_change": 0.1295,
+          "band_flip_rate": 0.4551,
+          "flip_to_likely_from_healthy_band": 0.0191,
+          "clip_auc": 0.6096,
+          "n": 679
         },
         "gain_minus12db": {
-          "mean_abs_change": 0.0008,
-          "band_flip_rate": 0.0061,
+          "mean_abs_change": 0.0006,
+          "band_flip_rate": 0.0029,
           "flip_to_likely_from_healthy_band": 0.0,
-          "clip_auc": 0.8912,
-          "n": 495
+          "clip_auc": 0.6844,
+          "n": 679
         },
         "lowpass_3k": {
-          "mean_abs_change": 0.0106,
-          "band_flip_rate": 0.0384,
+          "mean_abs_change": 0.0143,
+          "band_flip_rate": 0.0457,
           "flip_to_likely_from_healthy_band": 0.0,
-          "clip_auc": 0.8856,
-          "n": 495
+          "clip_auc": 0.6928,
+          "n": 679
         },
         "phone_band_8k": {
-          "mean_abs_change": 0.1142,
-          "band_flip_rate": 0.3192,
-          "flip_to_likely_from_healthy_band": 0.0,
-          "clip_auc": 0.7427,
-          "n": 495
+          "mean_abs_change": 0.0675,
+          "band_flip_rate": 0.2239,
+          "flip_to_likely_from_healthy_band": 0.0015,
+          "clip_auc": 0.5791,
+          "n": 679
         },
         "reverb_rt60_0.4": {
-          "mean_abs_change": 0.1273,
-          "band_flip_rate": 0.3313,
-          "flip_to_likely_from_healthy_band": 0.0,
-          "clip_auc": 0.8029,
-          "n": 495
+          "mean_abs_change": 0.0773,
+          "band_flip_rate": 0.2636,
+          "flip_to_likely_from_healthy_band": 0.0029,
+          "clip_auc": 0.6188,
+          "n": 679
         }
       },
       "summary": {
-        "mean_abs_change": 0.0801,
-        "band_flip_rate": 0.2232
+        "mean_abs_change": 0.056,
+        "band_flip_rate": 0.1937
       }
     },
     "with_augmentation": {
       "clean": {
-        "auc": 0.8744628099173555,
-        "balanced_accuracy": 0.8013636363636363,
-        "sensitivity": 0.7890909090909091,
-        "specificity": 0.8136363636363636,
-        "brier": 0.1733480752894209,
-        "n": 495
+        "auc": 0.6929327385638067,
+        "balanced_accuracy": 0.6357124114405668,
+        "sensitivity": 0.8054054054054054,
+        "specificity": 0.46601941747572817,
+        "brier": 0.2203507668885791,
+        "n": 679
       },
       "cutoffs": {
-        "pd_high": 0.5538,
-        "hc_high": 0.4111
+        "pd_high": 0.6924,
+        "hc_high": 0.4428
       },
       "degraded": {
         "noise_snr20": {
-          "mean_abs_change": 0.0396,
-          "band_flip_rate": 0.2101,
-          "flip_to_likely_from_healthy_band": 0.002,
-          "clip_auc": 0.8545,
-          "n": 495
+          "mean_abs_change": 0.0347,
+          "band_flip_rate": 0.1473,
+          "flip_to_likely_from_healthy_band": 0.0,
+          "clip_auc": 0.6366,
+          "n": 679
         },
         "noise_snr10": {
-          "mean_abs_change": 0.0607,
-          "band_flip_rate": 0.3313,
-          "flip_to_likely_from_healthy_band": 0.004,
-          "clip_auc": 0.8236,
-          "n": 495
+          "mean_abs_change": 0.0972,
+          "band_flip_rate": 0.3785,
+          "flip_to_likely_from_healthy_band": 0.0059,
+          "clip_auc": 0.5938,
+          "n": 679
         },
         "gain_minus12db": {
-          "mean_abs_change": 0.0005,
-          "band_flip_rate": 0.002,
+          "mean_abs_change": 0.0006,
+          "band_flip_rate": 0.0029,
           "flip_to_likely_from_healthy_band": 0.0,
-          "clip_auc": 0.8748,
-          "n": 495
+          "clip_auc": 0.6933,
+          "n": 679
         },
         "lowpass_3k": {
-          "mean_abs_change": 0.005,
-          "band_flip_rate": 0.0323,
+          "mean_abs_change": 0.0126,
+          "band_flip_rate": 0.053,
           "flip_to_likely_from_healthy_band": 0.0,
-          "clip_auc": 0.8718,
-          "n": 495
+          "clip_auc": 0.7014,
+          "n": 679
         },
         "phone_band_8k": {
-          "mean_abs_change": 0.0612,
-          "band_flip_rate": 0.2727,
+          "mean_abs_change": 0.0591,
+          "band_flip_rate": 0.2121,
           "flip_to_likely_from_healthy_band": 0.0,
-          "clip_auc": 0.7441,
-          "n": 495
+          "clip_auc": 0.6031,
+          "n": 679
         },
         "reverb_rt60_0.4": {
-          "mean_abs_change": 0.0625,
-          "band_flip_rate": 0.2828,
-          "flip_to_likely_from_healthy_band": 0.0,
-          "clip_auc": 0.8065,
-          "n": 495
+          "mean_abs_change": 0.0676,
+          "band_flip_rate": 0.2725,
+          "flip_to_likely_from_healthy_band": 0.0015,
+          "clip_auc": 0.6282,
+          "n": 679
         }
       },
       "summary": {
-        "mean_abs_change": 0.0382,
-        "band_flip_rate": 0.1885
+        "mean_abs_change": 0.0453,
+        "band_flip_rate": 0.1777
       }
     }
   }
