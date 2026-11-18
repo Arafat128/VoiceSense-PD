@@ -29,7 +29,7 @@ def submit_message(
     notice = limit_notice(question, quota, now)
     if notice:
         return TurnResult(history, quota, notice, False)
-    if client.load_api_key() is None:
+    if client.select_provider() is None:
         return TurnResult(history, quota, NOT_CONFIGURED, False)
     messages = trim_history([*trim_history(history), {"role": "user", "content": question}])
     try:

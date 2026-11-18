@@ -6,7 +6,7 @@ from typing import Self
 import httpx
 import pytest
 
-from src.assistant.client import API_URL, complete
+from src.assistant.client import API_URL, OPENAI_API_URL, complete, select_provider
 from src.assistant.policy import (
     MAX_HISTORY_TURNS,
     MAX_INPUT_CHARS,
@@ -59,7 +59,8 @@ captured: dict = {}
 @pytest.fixture
 def fake_http(monkeypatch: pytest.MonkeyPatch) -> None:
     captured.clear()
-    monkeypatch.setattr("src.assistant.client.load_api_key", lambda *args, **kwargs: "test-key")
+    monkeypatch.setattr("src.assistant.client.select_provider", lambda *args, **kwargs: "xai")
+    monkeypatch.setattr("src.assistant.client.load_provider_key", lambda *args, **kwargs: "test-key")
     monkeypatch.setattr(httpx, "Client", _Client)
     monkeypatch.setattr("src.assistant.client.httpx.Client", _Client)
 
@@ -98,7 +99,7 @@ def test_on_topic_answer_uses_chat_completions(fake_http: None) -> None:
 
 
 def test_missing_key_does_not_call_the_api(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("src.assistant.client.load_api_key", lambda *args, **kwargs: None)
+    monkeypatch.setattr("src.assistant.client.select_provider", lambda *args, **kwargs: None)
 
     def explode(*args, **kwargs):
         raise AssertionError("HTTP client should not be constructed")
@@ -107,6 +108,8 @@ def test_missing_key_does_not_call_the_api(monkeypatch: pytest.MonkeyPatch) -> N
     result = submit_message([], Quota(), "Is this a diagnosis?", now=10.0)
     assert result.called_api is False
     assert result.notice == NOT_CONFIGURED
+    assert "OPENAI_API_KEY" in result.notice
+    assert "XAI_API_KEY" in result.notice
     assert result.history == []
     assert result.quota.sent == 0
 
@@ -173,4 +176,65 @@ def test_complete_rejects_a_non_answer(monkeypatch: pytest.MonkeyPatch) -> None:
     from src.assistant.client import AssistantUnavailable
 
     with pytest.raises(AssistantUnavailable):
-        complete([{"role": "user", "content": "How does screening work?"}], api_key="test-key")
+        complete(
+            [{"role": "user", "content": "How does screening work?"}],
+            api_key="test-key",
+            provider="xai",
+        )
+
+
+def test_provider_selection_prefers_openai_then_xai(tmp_path) -> None:
+    missing = tmp_path / "missing"
+    assert (
+        select_provider(
+            environ={"OPENAI_API_KEY": "oa", "XAI_API_KEY": "xa"},
+            env_file=missing,
+            secrets_file=missing,
+        )
+        == "openai"
+    )
+    assert (
+        select_provider(environ={"XAI_API_KEY": "xa"}, env_file=missing, secrets_file=missing)
+        == "xai"
+    )
+    assert select_provider(environ={}, env_file=missing, secrets_file=missing) is None
+    forced = {
+        "OPENAI_API_KEY": "oa",
+        "XAI_API_KEY": "xa",
+        "VOICESENSE_ASSISTANT_PROVIDER": "xai",
+    }
+    assert select_provider(environ=forced, env_file=missing, secrets_file=missing) == "xai"
+    named_without_its_key = {"VOICESENSE_ASSISTANT_PROVIDER": "openai", "XAI_API_KEY": "xa"}
+    assert select_provider(environ=named_without_its_key, env_file=missing, secrets_file=missing) is None
+
+
+def test_openai_request_uses_openai_url_and_header(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured.clear()
+    monkeypatch.delenv("VOICESENSE_ASSISTANT_MODEL", raising=False)
+    monkeypatch.setattr("src.assistant.client.select_provider", lambda *args, **kwargs: "openai")
+    monkeypatch.setattr(
+        "src.assistant.client.load_provider_key",
+        lambda *args, **kwargs: "openai-test-key",
+    )
+    monkeypatch.setattr("src.assistant.client.httpx.Client", _Client)
+    result = submit_message([], Quota(), "Is this a medical diagnosis?", now=5.0)
+    assert result.called_api is True
+    assert captured["url"] == OPENAI_API_URL
+    assert captured["headers"]["Authorization"] == "Bearer openai-test-key"
+    assert captured["json"]["model"] == "gpt-4o-mini"
+    assert captured["json"]["max_tokens"] == MAX_OUTPUT_TOKENS
+    assert "tools" not in captured["json"]
+
+
+def test_model_override_applies_to_the_selected_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured.clear()
+    monkeypatch.setenv("VOICESENSE_ASSISTANT_MODEL", "gpt-4.1-mini")
+    monkeypatch.setattr("src.assistant.client.select_provider", lambda *args, **kwargs: "openai")
+    monkeypatch.setattr(
+        "src.assistant.client.load_provider_key",
+        lambda *args, **kwargs: "openai-test-key",
+    )
+    monkeypatch.setattr("src.assistant.client.httpx.Client", _Client)
+    submit_message([], Quota(), "What happens to my recording?", now=8.0)
+    assert captured["url"] == OPENAI_API_URL
+    assert captured["json"]["model"] == "gpt-4.1-mini"

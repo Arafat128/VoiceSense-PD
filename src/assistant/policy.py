@@ -11,8 +11,8 @@ MAX_HISTORY_TURNS = 6
 REQUEST_TIMEOUT_SECONDS = 20.0
 
 NOT_CONFIGURED = (
-    "Assistant not configured. Add XAI_API_KEY to a gitignored .env file "
-    "(see .env.example) and restart the app."
+    "Assistant not configured. Set OPENAI_API_KEY or XAI_API_KEY in a gitignored "
+    ".env file (see .env.example) and restart the app."
 )
 TOO_LONG = "Please keep questions to 500 characters or fewer."
 RATE_COUNT = (

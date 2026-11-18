@@ -33,9 +33,9 @@ The round chat bubble on every page answers only from a short project note. It d
 cp .env.example .env
 ```
 
-Put your xAI key in `XAI_API_KEY` inside `.env` (or in gitignored `.streamlit/secrets.toml`). Restart the app. The key stays on the server. If the key is missing, the rest of the app still runs and the chat says the assistant is not configured.
+Put either an OpenAI key (`OPENAI_API_KEY`) or an xAI key (`XAI_API_KEY`) in `.env`, or in gitignored `.streamlit/secrets.toml`. Restart the app. The key stays on the server. If neither key is set, the rest of the app still runs and the chat says the assistant is not configured.
 
-`VOICESENSE_ASSISTANT_MODEL` overrides the model. The default is `grok-4`.
+`VOICESENSE_ASSISTANT_PROVIDER` is `openai`, `xai`, or `auto` (the default). Auto uses OpenAI when `OPENAI_API_KEY` is set, and otherwise xAI when `XAI_API_KEY` is set. `VOICESENSE_ASSISTANT_MODEL` overrides the model for the provider that was selected. The defaults are `gpt-4o-mini` for OpenAI and `grok-4` for xAI.
 
 ### Tests
 
