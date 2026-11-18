@@ -13,6 +13,10 @@ A person records a vowel
 Privacy
     privacy.py             drop audio from memory, and build a receipt that has no WAV
 
+Project assistant (no tools, no recording access)
+    assistant/knowledge.md the only facts the chat is allowed to use
+    assistant/client.py    server-side Grok call; the API key stays on the server
+
 Training is offline and is not imported by the app
     training/train_tables.py    English UCI and Bengali BenSParX feature models
     training/train_audio.py     Italian vowel recordings, same features used at score time

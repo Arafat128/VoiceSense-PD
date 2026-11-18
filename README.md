@@ -25,6 +25,18 @@ Open the local URL (usually `http://localhost:8501`).
 
 Set `VOICESENSE_DEBUG=1` before that command to show the raw traceback after a failed live analysis. Without it, the page shows the error message only.
 
+### Project assistant
+
+The round chat bubble on every page answers only from a short project note. It does not see recordings or scores, and it is not a diagnosis.
+
+```bash
+cp .env.example .env
+```
+
+Put your xAI key in `XAI_API_KEY` inside `.env` (or in gitignored `.streamlit/secrets.toml`). Restart the app. The key stays on the server. If the key is missing, the rest of the app still runs and the chat says the assistant is not configured.
+
+`VOICESENSE_ASSISTANT_MODEL` overrides the model. The default is `grok-4`.
+
 ### Tests
 
 ```bash
@@ -99,6 +111,7 @@ A firm call also needs a clip of at least 4 seconds, low noise, mostly voiced au
 ```
 app/streamlit_app.py     # start the site; picks one screen
 app/pages/               # live, feature, privacy, about
+app/assistant_ui.py      # floating project chat
 app/widgets.py           # shared result cards and flash notices
 app/styles.css           # visual design
 app/styles.py            # loads that CSS
@@ -108,6 +121,7 @@ src/features/audio.py    # Praat / librosa features
 src/explain.py           # technical "why"
 src/plain_language.py    # everyday sentences
 src/privacy.py           # receipt with no WAV
+src/assistant/           # grounded Grok chat; knowledge.md is the only source
 src/config.py            # constants and the feature glossary
 training/                # offline only; not imported by the app
 models/                  # trained files; do not edit by hand

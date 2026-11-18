@@ -6,6 +6,7 @@ This file does not score a voice. It draws the frame and opens one screen:
   app/pages/feature.py    spreadsheet lab
   app/pages/privacy.py    on-device notice and receipt
   app/pages/about.py      how the method is limited
+  app/assistant_ui.py     project-only chat bubble
 
 The engine map is the docstring in src/__init__.py.
 """
@@ -20,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from app.assistant_ui import render_assistant
 from app.pages.about import render_about
 from app.pages.feature import feature_page
 from app.pages.live import live_page
@@ -104,6 +106,7 @@ def render() -> None:
         """,
         unsafe_allow_html=True,
     )
+    render_assistant()
 
 
 # app/pages/ holds imported screens. Calling navigation tells Streamlit not to
