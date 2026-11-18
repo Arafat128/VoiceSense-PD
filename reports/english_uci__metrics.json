@@ -39,7 +39,7 @@
         "cv_f1_std": 0.06685223801158545,
         "classification_report": "              precision    recall  f1-score   support\n\n          HC     0.5000    0.5000    0.5000        12\n          PD     0.8065    0.8065    0.8065        31\n\n    accuracy                         0.7209        43\n   macro avg     0.6532    0.6532    0.6532        43\nweighted avg     0.7209    0.7209    0.7209        43\n"
       },
-      "artifact": "D:\\fugu\\Thesis\\pd_screening\\models\\english_uci__random_forest.joblib",
+      "artifact": "models/english_uci__random_forest.joblib",
       "top_features": [
         {
           "feature": "PPE",
@@ -124,7 +124,7 @@
         "cv_f1_std": 0.047427768712651995,
         "classification_report": "              precision    recall  f1-score   support\n\n          HC     0.8571    0.5000    0.6316        12\n          PD     0.8333    0.9677    0.8955        31\n\n    accuracy                         0.8372        43\n   macro avg     0.8452    0.7339    0.7636        43\nweighted avg     0.8400    0.8372    0.8219        43\n"
       },
-      "artifact": "D:\\fugu\\Thesis\\pd_screening\\models\\english_uci__svm_rbf.joblib",
+      "artifact": "models/english_uci__svm_rbf.joblib",
       "top_features": []
     }
   },
@@ -154,6 +154,6 @@
     "PPE"
   ],
   "best_model": "svm_rbf",
-  "holdout_samples_path": "D:\\fugu\\Thesis\\pd_screening\\models\\english_uci__holdout_samples.csv",
+  "holdout_samples_path": "models/english_uci__holdout_samples.csv",
   "app_default_model": "random_forest"
 }
