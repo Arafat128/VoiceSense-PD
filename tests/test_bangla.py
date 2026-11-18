@@ -65,3 +65,27 @@ def test_bangla_row_scores_with_cutoffs() -> None:
     out = predict_from_features("bengali_bensparx", row, "random_forest")
     assert out["pred_label"] in (-1, 0, 1)
     assert out["thresholds"] == pack["decision_thresholds"]
+
+
+def test_docs_state_the_retrained_numbers_and_provenance() -> None:
+    from src.assistant.prompt import load_knowledge
+
+    text = load_knowledge()
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    for doc in (text, readme):
+        assert "0.88 (0.83" in doc
+        assert "Sakar et al. 2019" in doc
+        assert "0.938" in doc  # named only as the retired figure
+    assert "Is the Bangla model trained on BenSParX?" in text
+
+
+def test_about_page_shows_bangla_section() -> None:
+    from streamlit.testing.v1 import AppTest
+
+    at = AppTest.from_file(str(ROOT / "app" / "streamlit_app.py"), default_timeout=60)
+    at.session_state["active_page"] = "About & method"
+    at.run()
+    assert not at.exception
+    text = " ".join(m.value for m in at.markdown)
+    assert "Bangla model (BenSParX)" in text
+    assert "UCI person (honest)" in text

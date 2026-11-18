@@ -18,7 +18,8 @@ Project assistant (no tools, no recording access)
     assistant/client.py    server-side Grok call; the API key stays on the server
 
 Training is offline and is not imported by the app
-    training/train_tables.py    English UCI and Bengali BenSParX feature models
+    training/train_tables.py    English UCI feature model
+    training/train_bangla.py    Bengali BenSParX feature model (person-grouped CV)
     training/train_audio.py     Italian vowel recordings, same features used at score time
     training/data_loading.py    read those two tables
     training/common.py          shared subject-balanced hold-out and dataset root

@@ -4,13 +4,13 @@ Premium research app for **voice-based Parkinson’s disease (PD) screening** wi
 
 - **Live microphone / audio upload** (English & Bangla prompt modes)
 - **On-device processing** (local Streamlit: recording discarded after analysis)
-- **Feature-table lab** (UCI English + BenSParX Bengali)
+- **Feature-table lab** (UCI English + BenSParX Bengali; one row or a whole CSV)
 - **Explainable outputs** (why PD / why not / uncertain)
 - **Conservative decision policy** to reduce false PD flags on laptop mics
 
 > **Not a medical diagnosis.** Screening support / research only.
 
-Three model families are included. The **live** model, used when you record, is trained on sustained vowels from three public corpora (Italian Parkinson’s Voice, UAMS/Iyer, Argentina vowel /a/: 679 clips, 231 speakers). **English** is the separate UCI Parkinson’s feature-table model (195 recordings, 32 subjects) and **Bangla** is the separate BenSParX feature-table model (900 recordings, 120 subjects). Both live only in Feature lab: their columns cannot be measured validly from a microphone clip, so they are not used in live analysis. English and Bangla mode on the live screen change the on-screen prompt only.
+Three model families are included. The **live** model, used when you record, is trained on sustained vowels from three public corpora (Italian Parkinson’s Voice, UAMS/Iyer, Argentina vowel /a/: 679 clips, 231 speakers). **English** is the separate UCI Parkinson’s feature-table model (195 recordings, 32 subjects) and **Bangla** is the separate BenSParX feature-table model (900 rows; see the provenance note below). Both live only in Feature lab: their columns cannot be measured validly from a microphone clip, so they are not used in live analysis. English and Bangla mode on the live screen change the on-screen prompt only.
 
 > **Accuracy, honestly.** On new speakers from the same corpora the live model reaches person-level AUC 0.72 (95% CI 0.66–0.79). On a corpus it never saw, AUC is 0.46–0.56, close to chance. Treat a live result as a research demo.
 
@@ -51,10 +51,12 @@ CI on GitHub runs the same ruff and pytest commands on Python 3.13.
 
 ### Train models (if needed)
 
-Datasets are not in this repo. Point `VOICESENSE_DATA_DIR` or `--data-dir` at the folder that contains `01_UCI_Parkinsons`, `02_BenSParX`, `07_Italian_PD_Voice`, `09_UAMS_Iyer_figshare` (figshare 23849127, CC BY 4.0) and `10_Argentina_vowelA_figshare` (figshare 21453867, CC BY 4.0).
+Datasets are not in this repo. Point `VOICESENSE_DATA_DIR` or `--data-dir` at the folder that contains `01_UCI_Parkinsons`, `02_BenSParX`, `03_UCI_PD_Classification` and `05_UCI_Replicated_Acoustic` (for the BenSParX provenance and cross-dataset checks), `07_Italian_PD_Voice`, `09_UAMS_Iyer_figshare` (figshare 23849127, CC BY 4.0) and `10_Argentina_vowelA_figshare` (figshare 21453867, CC BY 4.0).
 
 ```bash
-python -m training.train_tables --data-dir /path/to/datasets
+python -m training.train_tables --data-dir /path/to/datasets       # English UCI table model
+python -m training.train_bangla --data-dir /path/to/datasets       # BenSParX, person-grouped CV
+python -m training.cross_dataset --data-dir /path/to/datasets      # BenSParX vs other tables
 python -m training.train_audio --data-dir /path/to/datasets      # 3-corpus vowel model
 python -m training.eval_external --data-dir /path/to/datasets    # held-out corpus test
 python -m training.robustness --data-dir /path/to/datasets       # noise / phone / reverb
@@ -82,7 +84,22 @@ The previous Italian-only model reported 0.97 hold-out accuracy; it was trained 
 
 **English UCI model.** 195 recordings, 32 subjects (147 Parkinson’s, 48 healthy), 22 published dysphonia features. Used in Feature lab only. Random forest hold-out (43 recordings, 7 subjects): accuracy 0.721, F1 0.806, ROC-AUC 0.754, CV F1 0.839 ± 0.067. SVM hold-out F1 0.896, CV F1 0.862 ± 0.047.
 
-**Bengali BenSParX model.** 900 recordings, 120 subjects (450 Parkinson’s, 450 healthy), 71 features including MFCCs. Used in Feature lab only. Random forest hold-out (177 recordings, 24 subjects): accuracy 0.938, F1 0.937, ROC-AUC 0.987, CV F1 0.931 ± 0.025. SVM hold-out F1 0.930, CV F1 0.932 ± 0.020.
+**Bengali BenSParX model** (`training/train_bangla.py`). 900 rows labelled as 120 Bangla speakers (450 Parkinson’s, 450 healthy), 71 features. Used in Feature lab only.
+
+*Provenance.* Every public BenSParX row equals a row of the UCI Parkinson’s Disease Classification table (Sakar et al. 2019, Turkish sustained /a/) times one constant per row (1.027–1.092), with the same label; several columns are renamed (`training/bensparx_provenance.py`, `reports/bensparx_provenance.json`). Each BenSParX speaker id mixes about 7 UCI people, so the old speaker-grouped split put the same person in train and test for 94% of test rows, and its 0.938 accuracy is retired.
+
+| persons grouped by | model | per-row AUC (95% CI) | per-person AUC (95% CI) |
+|---|---|---|---|
+| UCI subject (shipped) | random forest | 0.86 (0.81–0.91) | 0.88 (0.83–0.92) |
+| UCI subject | RBF SVM | 0.78 (0.70–0.85) | 0.79 (0.71–0.85) |
+| UCI subject | logistic regression | 0.81 (0.75–0.87) | 0.83 (0.77–0.88) |
+| published speaker id (leaky) | random forest | 0.96 (0.95–0.97) | 1.00 (1.00–1.00) |
+
+Person-grouped 5-fold CV repeated 5 times, person bootstrap CIs, grouped sigmoid calibration. Cut-offs from validation data: random forest calls the PD side at ≥ 85% and the healthy side at ≤ 61%, Uncertain in between.
+
+*Cross-dataset* (`reports/bensparx_cross_dataset.md`, shared jitter/shimmer/noise measures, standardized per table, per-person AUC): BenSParX → UCI Replicated (Spanish) 0.56–0.60, → UCI Parkinsons (English) 0.86; other tables → BenSParX 0.56–0.73. BenSParX ↔ Turkish UCI is the same people and is not a transfer test.
+
+*Audio.* A BenSParX row cannot be rebuilt faithfully from a recording (three toolbox-only columns, unpublished settings, unknown row scale). Rebuilt rows from 679 labelled vowels scored person AUC 0.50 (`reports/bensparx_audio_check.json`), so the app has no Bengali audio path.
 
 ## Privacy (on-device screening)
 

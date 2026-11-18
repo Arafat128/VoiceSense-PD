@@ -75,6 +75,8 @@ def render_about() -> None:
             "Treat results as a research demonstration."
         )
 
+    render_bangla()
+
     st.markdown("### English and Bangla")
     st.markdown(
         "The live model listens to a sustained vowel, so it does not depend on words. "
@@ -96,3 +98,41 @@ def render_about() -> None:
     )
     st.markdown("### Disclaimer")
     st.markdown("Research screening support only. Not a clinical diagnostic device.")
+
+
+def render_bangla() -> None:
+    """BenSParX numbers, read from the reports written by training/train_bangla.py."""
+    rep = _load("bengali_bensparx__metrics.json")
+    if "validation" not in rep:
+        return
+    prov = rep.get("provenance") or {}
+    leak = (rep.get("old_model") or {}).get("leakage") or {}
+    st.markdown("### Bangla model (BenSParX)")
+    st.markdown(
+        f"The public BenSParX table has {rep['n_samples']} rows labelled as {rep['n_bensparx_speakers']} Bangla "
+        f"speakers. All {prov.get('rows_with_exact_scaled_match', '?')} rows equal rows of the UCI Parkinson's "
+        "Disease Classification table (Sakar et al. 2019, Turkish sustained /a/) times a constant of "
+        "1.03–1.09, with the same labels, from "
+        f"{prov.get('distinct_uci_subjects', '?')} UCI people. The original Bengali audio is not public, so "
+        "this could not be checked against it."
+    )
+    rows = []
+    labels = {"uci_subject": "UCI person (honest)", "bensparx_speaker": "published speaker id"}
+    for grouping, models in rep["validation"].items():
+        for name, block in models.items():
+            m = block["metrics"]
+            rows.append(
+                f"| {labels.get(grouping, grouping)} | {name} | {m['clip_auc']:.2f} "
+                f"({m['clip_auc_ci95'][0]:.2f}–{m['clip_auc_ci95'][1]:.2f}) | {m['person_auc']:.2f} "
+                f"({m['person_auc_ci95'][0]:.2f}–{m['person_auc_ci95'][1]:.2f}) |"
+            )
+    st.markdown(
+        "Person-grouped 5-fold CV repeated 5 times, 95% CI from a person bootstrap:\n\n"
+        "| persons grouped by | model | per-row AUC | per-person AUC |\n|---|---|---|---|\n" + "\n".join(rows)
+    )
+    st.warning(
+        f"The earlier 0.938 accuracy came from a split where {leak.get('test_rows_with_same_uci_person_in_train', 0):.0%} "
+        "of test rows had the same person in training. Grouped by the real person, the random forest reaches "
+        "the per-person AUC above. It has not learned Bangla speech, and it cannot score a recording: rows rebuilt "
+        "from 679 labelled vowel recordings scored AUC 0.50. Bangla mode on the live screen changes the prompt only."
+    )
